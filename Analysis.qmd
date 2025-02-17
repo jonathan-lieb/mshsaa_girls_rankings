@@ -1,0 +1,48 @@
+---
+title: "Analysis and Prediction of MSHSAA Girls Basketball Data"
+author: "Jonathan Lieb"
+format: html
+---
+# Project Design
+## Steps of the Analysis
+1. **Scrape the data**: Use the `rvest` package to scrape the data from the MSHSAA website and put it in a data frame.
+2. **Clean the data**: Use the `dplyr` package to clean the data, including removing unnecessary columns and rows, and converting data types. This also involves finding errors in the data and replacing them with the most accurate data.
+3. **Create a modeling dataset**: Use the `dplyr` package to create a modeling dataset that includes relevant features for analysis and prediction. This includes creating new features based on existing data, such prior team scoring metrics, strength of schedule metrics, and strength of record metrics.
+4. **Perform EDA**: Use the `ggplot2` package to perform exploratory data analysis (EDA) on the modeling dataset. This includes creating visualizations to understand the distribution of features, relationships between features, and any potential patterns in the data.
+5. **Build a predictive model**: Use the `tidymodels` package to build a predictive model using the modeling dataset. This includes splitting the data into training and testing sets, selecting relevant features, and training the model using various algorithms (e.g., linear regression, decision trees, etc.). 
+6. **Evaluate the models**: Use the `yardstick` package to evaluate the performance of the predictive model using various metrics. For the point estimation, this includes metrics such as RMSE, MAE, and R-squared. For the classification model, this includes metrics such as brier score, log loss, and accuracy.
+7. **Interpret the importance of variables**: Coefficients or importance scores from the model will be used to interpret the importance of different variables in predicting the outcome of games. This includes understanding which features are most influential in determining the score and how they interact with each other.
+8. **Make predictions**: Use the trained model to make predictions on new data. This includes using the model to predict the outcome of future games and evaluating the accuracy of those predictions.
+9. **Create a Shiny app**: Use the `shiny` package to create a Shiny app that allows users to interact with the model and make predictions. It will also include team rankings that are a measure of projected performance against teams in the same class based on the model.
+10. **Make the Process Automated**: Adjust the scraping, cleaning, modeling data creation, and prediction processes to be automated. This includes creating a function that can be run on a schedule to update the data and predictions automatically each night.
+
+## Primary Challenges Faced
+1. **Data Cleaning**: The data scraped from the MSHSAA website was not in a clean format, and contained plentiful errors. This means that not only will I have to scrape the scoreboard page, but when certain conflicts arise scrape the relevant team pages and automate the decision process on which data to use.
+2. **Lack of Data to Start the Season**: The data at the start of the season is limited and makes prediction difficult. This means that I will have to find some way to estimate the effect of prior years data as well as current data and league average data to make predictions that are not completely random.
+3. **Correlation between Predictors**: A handful of the predictors in the modeling dataset are correlated with each other, which can lead to multicollinearity issues in the predictive model. This means that I will have to be careful in selecting the features to include in the model and may need to use techniques such as regularization to mitigate this issue.
+4. **Automation**: Automating the scraping, cleaning, modeling data creation, and prediction processes is a complex task that requires careful planning and testing, which sometimes fails based on internet connection and the MSHSAA website. This means that I will have to create a robust system that can handle errors and exceptions, and ensure that the data is updated regularly.
+
+## Modeling Goals
+######## Point Estimation
+1. RMSE less than 10 points
+2. MAE less than 7.5 points
+
+######## Classification
+1. Brier score less than 0.15
+2. Accuracy greater than 0.80
+
+# Project Work Completed
+## Steps of the Analysis
+1. **Scrape the data**: The data was successfully scraped from the MSHSAA girl's scoreboard using the `initial_scrape.R` script, which uses the functions from `Functions/webscrape_new_games.R`. The original data consisted of 203,272 rows and 20 columns related to the teams and identifying traits about them, score, location, and date. The data is stored at `Data/initial_data.parquet`. This data consists of every game played from November 1, 2010 to January 27, 2025. 
+2. **Clean the data**: The data was cleaned in the `initial_scrape.R` script as well, calling functions from `Functions/clean_errors.R` and by association `Functions/add_home_away.R`, `Functions/clean_add_reverse_row.R`, and `Functions/scrape_team_page.R`. There were 8 major types of errors in the data. These were:  
+ - Same score between teams within one week of each other  
+ - Almost same score between two teams within 3 days of each other (scores within 5)  
+ - One teams score basically nothing (score for one less than 5)  
+ - Flipped scores (One score in day or within 3 days has one team winning and the the other has the other team winning with the same score)  
+ - Two different scores in the same day  
+ - Score for one of the teams is equal to their schoolid.  
+ - The School or opponent is "TBD"  
+Each of these required unique solutions to fix, which often involved scraping both team's pages to see if the score was listed there. The data was then saved to `Data/cleaned.parquet`. This cleaned data consists of 196,868 rows and 20 columns.
+3. **Create a modeling dataset**: The modeling dataset was created in the `initial_scrape.R` script as well, calling functions from `Functions/create_modeling_data.R`. This involved creating new features based on existing data, such as prior team scoring metrics, strength of schedule metrics, strength of record metrics, and historical versions of each of the metrics. Each metric only includes prior information about the team. The modeling dataset was saved to `Data/modeling_data.parquet`. The modeling dataset consists of 196,868 rows and 82 columns.
+4. **Perform EDA**: The EDA was performed in the `EDA.R` script, which includes visualizations to understand the distribution of features, relationships between features, and any potential patterns in the data. The scores themselves for the girls games are normally distributed, with a mean of 45 and standard deviation of 15. The primary issue with the data is the large amount of missing values, which occur for the first game for all of the teams. Many of the variables are also relatively normally distributed until you impute values for missing data, which makes more leptokurtic distributions. Correlations between variables and the target variable were also examined, as well as correlations between pairs of variables.
+5. **Build a predictive model**: Model code for a variety of different model structures has been stored in `Model_Code/`. The models include linear regression, boosted trees, neural networks, mixed effects models, penalized regression, and more. Modeling was done using the `tidymodels` package. Data was split into training and testing sets each time with a 60/40 split. The same seed was used for each model. Most used tuning with resamples and cross validation and then tuning with `tune_bayes()` to find the best hyperparameters. 
