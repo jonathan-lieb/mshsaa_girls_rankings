@@ -40,6 +40,7 @@ clean_errors <- function(base_df, recent = FALSE){
   correct_error7_8 <- function(df, tbd = FALSE) {
     # Parallel setup
     plan(multisession, workers = availableCores())
+    df <- df |> distinct(game_id, .keep_all = TRUE)
     
     # Helper function to process each row
     process_row <- function(i) {
@@ -52,21 +53,49 @@ clean_errors <- function(base_df, recent = FALSE){
       score <- df$score[i]
       opp_score <- df$opp_score[i]
       
-      if (!(school_id == -1) & score == school_id){
-        if((school_id_opp == -1)){
-          df[i, ]
+      if (score == school_id | opp == "TBD"){
+        if(school_id_opp == -1){
+          game_1 <- scrape_team_page(school_id, season, opp, d, womens = TRUE, tbd = tbd)
+          row1 <- df[i, ] |>
+            mutate(score = ifelse(game_1$score[1]< 200, 
+                            game_1$score[1],
+                            score),
+                   opp_score = ifelse(game_1$opp_score[1]<200, 
+                                      game_1$opp_score[1],
+                                      opp_score))
+          return(row1 |> add_reverse_row())
         } else {
           game_2 <- scrape_team_page(school_id_opp, season, school, d, womens = TRUE, tbd = tbd)
-          df[i, ] |> 
-            mutate(score = game_2$opp_score[1], opp_score = game_2$score[1])
+          row1 <- df[i,] |> 
+            mutate(score = ifelse(game_2$opp_score[1]< 200, 
+                            game_2$opp_score[1],
+                            score),
+                   opp_score = ifelse(game_2$score[1]<200, 
+                                      game_2$score[1],
+                                      opp_score))
+          return(row1 |> add_reverse_row())
         }
       } else {
-        if((school_id == -1)){
-          df[i, ]
+        if(school_id == -1){
+          game_2 <- scrape_team_page(school_id_opp, season, school, d, womens = TRUE, tbd = tbd)
+          row1 <- df[i,] |> 
+            mutate(score = ifelse(game_2$opp_score[1]< 200, 
+                            game_2$opp_score[1],
+                            score),
+                   opp_score = ifelse(game_2$score[1]<200, 
+                                      game_2$score[1],
+                                      opp_score))
+          return(row1 |> add_reverse_row())
         } else {
           game_1 <- scrape_team_page(school_id, season, opp, d, womens = TRUE, tbd = tbd)
-          df[i, ] |> 
-            mutate(score = game_1$score[1], opp_score = game_1$opp_score[1])
+          row1 <- df[i,] |> 
+            mutate(score= ifelse(game_1$score[1]< 200, 
+                            game_1$score[1],
+                            score),
+                   opp_score = ifelse(game_1$opp_score[1]<200, 
+                                      game_1$opp_score[1],
+                                      opp_score))
+          return(row1 |> add_reverse_row())
         }
       }
     }
@@ -88,6 +117,7 @@ clean_errors <- function(base_df, recent = FALSE){
     # Parallel setup
     plan(multisession, workers = availableCores())
     
+    df <- df |> distinct(game_id, .keep_all = TRUE)
     # Helper function to process each row
     process_row <- function(i) {
       school <- df$school[i]
@@ -99,47 +129,60 @@ clean_errors <- function(base_df, recent = FALSE){
       score <- df$score[i]
       opp_score <- df$opp_score[i]
       
-      if ((school_id == -1) & (school_id_opp == -1)) {
+      if (school_id == -1 & school_id_opp == -1) {
         return(NULL)
-      }
-      
-      if (!(school_id == -1)) {
-        game_1 <- scrape_team_page(school_id, season, opp, d, womens = TRUE)
-      }
-      
-      if (!(school_id_opp == -1)) {
+      } else if (school_id == -1){
         game_2 <- scrape_team_page(school_id_opp, season, school, d, womens = TRUE)
-      } else {
-        game_2 <- tibble(score = game_1$opp_score[1], opp_score = game_1$score[1])
-      }
-      
-      if ((school_id == -1)) {
-        game_1 <- tibble(score = game_2$opp_score[1], opp_score = game_2$score[1])
-      }
-      
-      if((is.na(game_1$score[1]) | is.na(game_2$score[1])) & (is.na(game_2$score[1]) | is.na(game_1$score[1]))){
-        return(NULL)
-      } else if(is.na(game_1$score[1]) | is.na(game_1$opp_score[1])){
-        return(df[i,] |> mutate(score = game_2$opp_score[1], opp_score = game_2$score[1]))
-      } else if(is.na(game_2$score[1]| is.na(game_2$opp_score[1]))){
-        return(df[i,] |> mutate(score = game_1$score[1], opp_score = game_1$opp_score[1]))
-      } else if(game_1$score[1] == game_2$opp_score[1] & game_1$opp_score[1] == game_2$score[1]) {
-        return(df[i, ] |> 
-                 mutate(score = game_1$score[1], opp_score = game_1$opp_score[1]))
-      } else if(i %% 2 == 0){
-        df[i, ] |> 
+        row1 <- df[i,] |> 
+          mutate(score = game_2$opp_score[1], opp_score = game_2$score[1])
+        return(row1 |> add_reverse_row())
+      } else if (school_id_opp == -1){
+        game_1 <- scrape_team_page(school_id, season, opp, d, womens = TRUE)
+        row1 <- df[i,] |> 
           mutate(score = game_1$score[1], opp_score = game_1$opp_score[1])
-      } else {
-        df[i, ] |> 
-          mutate(score = game_2$score[1], opp_score = game_2$opp_score[1])
+        return(row1 |> add_reverse_row())
+      } else{
+        game_1 <- scrape_team_page(school_id, season, opp, d, womens = TRUE)
+        game_2 <- scrape_team_page(school_id_opp, season, school, d, womens = TRUE)
+        
+        if (nrow(game_1) == 0 | nrow(game_2) == 0) {
+          return(NULL)
+        } else if (nrow(game_1) == 0){
+          row1 <- df[i,] |> 
+            mutate(score = game_2$opp_score[1], opp_score = game_2$score[1])
+          return(row1 |> add_reverse_row())
+        } else if (nrow(game_2) == 0){
+          row1 <- df[i,] |> 
+            mutate(score = game_1$score[1], opp_score = game_1$opp_score[1])
+          return(row1 |> add_reverse_row())
+        } else if (game_1$score[1] > 200 | game_1$opp_score[1] > 200 |
+                   school_id == game_1$score[1] | school_id_opp == game_1$opp_score[1]){
+          row1 <- df[i,] |> 
+            mutate(score = game_2$opp_score[1], opp_score = game_2$score[1])
+          return(row1 |> add_reverse_row())
+        } else if (game_2$score[1] > 200 | game_2$opp_score[1] > 200 |
+                   game_2$opp_score[1] == school_id[1] | game_2$score[1] == school_id_opp[1]){
+          row1 <- df[i,] |> 
+            mutate(score = game_1$score[1], opp_score = game_1$opp_score[1])
+          return(row1 |> add_reverse_row())
+        }else{
+          row1 <- df[i,] |> 
+            mutate(score = game_1$score[1], opp_score = game_1$opp_score[1])
+        return(row1 |> add_reverse_row())
+        }
       }
     }
-    
     # Use future_map_dfr for parallel processing and combine results
     corrections <- future_map_dfr(seq_len(nrow(df)), process_row, .progress = TRUE)
     
     return(corrections)
   }
+  
+  base_df <- base_df |> 
+    arrange(date, game_id) |> 
+    distinct(school, opp, score, opp_score, date, .keep_all = TRUE)
+  
+  print(count(count(base_df, game_id), n <2))
   
   # Error 8 
   data_error8 <- base_df |> 
@@ -151,6 +194,8 @@ clean_errors <- function(base_df, recent = FALSE){
     bind_rows(data8_corrected)  |> 
     filter(!(school == "TBD" | opp == "TBD"))
   
+  print("8 Done")
+  print(count(count(data8_fixed, game_id), n <2))  
   # Error 7
   data_error7 <- data8_fixed |> 
     filter(score == schoolid | opp_score == opp_schoolid)
@@ -160,6 +205,9 @@ clean_errors <- function(base_df, recent = FALSE){
   data7_fixed <- data8_fixed |> 
     anti_join(data_error7, by = c("school", "opp", "date")) |>
     bind_rows(error7_corrections)
+  
+  print("7 Done")
+  print(count(count(data7_fixed, game_id), n <2))
   
   # Error 6
   data_error6 <- data7_fixed |> 
@@ -171,6 +219,9 @@ clean_errors <- function(base_df, recent = FALSE){
   data6_fixed <- data7_fixed |> 
     anti_join(data_error6, by = c("school", "opp", "date")) |>
     bind_rows(error6_corrections)
+  
+  print("6 Done")
+  print(count(count(data6_fixed, game_id), n <2))
   
   # Error 5
   data_error5 <- data6_fixed |> 
@@ -184,13 +235,17 @@ clean_errors <- function(base_df, recent = FALSE){
     anti_join(data_error5, by = c("school", "opp", "date")) |>
     bind_rows(error5_corrections)
   
+  print("5 Done")
+  print(count(count(data5_fixed, game_id), n <2))
   # Error 4
   data4_fixed <- data5_fixed |>
     filter(score >= 4 & opp_score >= 4)
   
+  print(count(count(data4_fixed, game_id), n <2))
   # Error 3
   data3_fixed <- data4_fixed |>
     filter(score >= 10 | opp_score >= 10)
+  print(count(count(data3_fixed, game_id), n <2))
   
   # Error 2
   data2_fixed <- data3_fixed |>
@@ -198,10 +253,13 @@ clean_errors <- function(base_df, recent = FALSE){
     mutate(day_diff = abs(as.numeric(date - lag(date)))) |>
     filter(day_diff > 3 | (abs(score -lag(score, default = -2)) + abs(opp_score - lag(opp_score, default = -2)) > 5))
     
+  print(count(count(data2_fixed, game_id), n <2))
   # Error 1
   data1_fixed <- data2_fixed |>
     distinct(school, opp, score, opp_score, wk = week(date), season, .keep_all = TRUE) |>
     select(-wk)
+  
+  print(count(count(data1_fixed, game_id), n <2))
   
   last_data <- data1_fixed |> 
     select(1:20) |> 
