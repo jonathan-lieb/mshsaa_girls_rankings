@@ -6,7 +6,7 @@
 # Load Libraries and Functions
 library(tidymodels)
 library(tidyverse)
-library(arrow)s
+library(arrow)
 library(future)
 library(multilevelmod)
 library(broom.mixed)

@@ -29,12 +29,16 @@
 
 # This function takes a base dataframe and checks for the above errors.
 # It returns a dataframe that has been cleaned of the errors.
-
-clean_errors <- function(base_df, recent = FALSE){
+clean_errors <- function(base_df, new_data = NULL, recent = FALSE){
   
   if(recent){
-    base_df_old <- base_df |> filter(date <= today() - 7)
-    base_df <- base_df |> filter(date > today() - 7)
+    oldest_new_day <- b |> 
+      distinct(date) |>
+      arrange(date) |>
+      slice_head(n = 1) |> 
+      pull(date)
+    base_df_old <- base_df |> filter(date <= oldest_new_day - 7)
+    base_df <- base_df |> filter(date > oldest_new_day - 7)
   }
   
   correct_error7_8 <- function(df, tbd = FALSE) {
@@ -182,7 +186,7 @@ clean_errors <- function(base_df, recent = FALSE){
     arrange(date, game_id) |> 
     distinct(school, opp, score, opp_score, date, .keep_all = TRUE)
   
-  print(count(count(base_df, game_id), n <2))
+  print(count(count(base_df, game_id), n != 2))
   
   # Error 8 
   data_error8 <- base_df |> 
@@ -195,7 +199,7 @@ clean_errors <- function(base_df, recent = FALSE){
     filter(!(school == "TBD" | opp == "TBD"))
   
   print("8 Done")
-  print(count(count(data8_fixed, game_id), n <2))  
+  print(count(count(data8_fixed, game_id), n != 2))  
   # Error 7
   data_error7 <- data8_fixed |> 
     filter(score == schoolid | opp_score == opp_schoolid)
@@ -207,27 +211,37 @@ clean_errors <- function(base_df, recent = FALSE){
     bind_rows(error7_corrections)
   
   print("7 Done")
-  print(count(count(data7_fixed, game_id), n <2))
+  print(count(count(data7_fixed, game_id), n != 2))
   
   # Error 6
   data_error6 <- data7_fixed |> 
     group_by(school, opp, date) |>
-    filter(row_number() > 1)
+    filter(row_number() > 1) |> 
+    ungroup()
   
   error6_corrections <- correct_error5_6(data_error6)
   
   data6_fixed <- data7_fixed |> 
     anti_join(data_error6, by = c("school", "opp", "date")) |>
-    bind_rows(error6_corrections)
+    bind_rows(error6_corrections) |> 
+    group_by(school, opp, date) |>
+    mutate(diff = abs(score - opp_score)) |>
+    filter(diff == min(diff)) |> 
+    distinct(school, opp, date, .keep_all = TRUE) |>
+    ungroup() |> 
+    select(-diff)
   
   print("6 Done")
-  print(count(count(data6_fixed, game_id), n <2))
+  print(count(count(data6_fixed, game_id), n != 2))
   
   # Error 5
   data_error5 <- data6_fixed |> 
     group_by(school, opp, season) |> 
     mutate(day_diff = abs(as.numeric(date - lag(date)))) |> 
-    filter(day_diff <= 3 & score == lag(opp_score) & opp_score == lag(score))
+    filter(day_diff <= 3 & score == lag(opp_score) & opp_score == lag(score)) |> 
+    ungroup()
+  
+  print(data_error5)
   
   error5_corrections <- correct_error5_6(data_error5)
   
@@ -236,34 +250,36 @@ clean_errors <- function(base_df, recent = FALSE){
     bind_rows(error5_corrections)
   
   print("5 Done")
-  print(count(count(data5_fixed, game_id), n <2))
+  print(count(count(data5_fixed, game_id), n != 2))
   # Error 4
   data4_fixed <- data5_fixed |>
     filter(score >= 4 & opp_score >= 4)
   
-  print(count(count(data4_fixed, game_id), n <2))
+  print(count(count(data4_fixed, game_id), n != 2))
   # Error 3
   data3_fixed <- data4_fixed |>
     filter(score >= 10 | opp_score >= 10)
-  print(count(count(data3_fixed, game_id), n <2))
+  print(count(count(data3_fixed, game_id), n != 2))
   
   # Error 2
   data2_fixed <- data3_fixed |>
     group_by(school, opp, season) |>
     mutate(day_diff = abs(as.numeric(date - lag(date)))) |>
-    filter(day_diff > 3 | (abs(score -lag(score, default = -2)) + abs(opp_score - lag(opp_score, default = -2)) > 5))
+    filter(day_diff > 3 | (abs(score -lag(score, default = -2)) + abs(opp_score - lag(opp_score, default = -2)) > 5)) |> 
+    ungroup()
     
-  print(count(count(data2_fixed, game_id), n <2))
+  print(count(count(data2_fixed, game_id), n != 2))
   # Error 1
   data1_fixed <- data2_fixed |>
     distinct(school, opp, score, opp_score, wk = week(date), season, .keep_all = TRUE) |>
     select(-wk)
   
-  print(count(count(data1_fixed, game_id), n <2))
+  print(count(count(data1_fixed, game_id), n != 2))
   
   last_data <- data1_fixed |> 
     select(1:20) |> 
     ungroup() |> 
+    filter(school != opp) |> 
     mutate(w_l = factor(ifelse(score > opp_score, "W", "L"), levels = c("L", "W")))
   
   if(recent)(return(bind_rows(base_df_old, last_data) |> ungroup()))else(return(last_data))

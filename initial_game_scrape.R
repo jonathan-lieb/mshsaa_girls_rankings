@@ -34,14 +34,14 @@ miceadds::source.all(paste(basic_file_path, "Functions\\", sep = "\\\\"))
 initial_data <- scrape_days(game_dates, finished = T)
 
 write_parquet(initial_data, paste(basic_file_path, "Data\\", "initial_data.parquet", sep = "\\"))
+initial_data <- read_parquet(paste(basic_file_path, "Data\\", "initial_data.parquet", sep = "\\"))
 
 # Then I clean the data of errors
-initial_errors <- initial_data |>
-  filter(game_id %in% c("118 - 12012022","9 - 12262023","33 - 02022024" ))
 
 cleaned <- clean_errors(initial_data)
 cleaned_errors <- cleaned |> 
-  filter(score > 200 | opp_score > 200)
+  group_by(game_id) |>
+  filter(n() != 2)
 write_parquet(cleaned, paste(basic_file_path, "Data\\", "cleaned.parquet", sep = "\\"))
 
 cleaned <- read_parquet(paste(basic_file_path, "Data\\", "cleaned.parquet", sep = "\\"))

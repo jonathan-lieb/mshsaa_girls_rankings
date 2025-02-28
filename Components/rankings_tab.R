@@ -1,8 +1,11 @@
 tabItem(tabName = "rankings",
-        fluidRow(column(12, h1("Missouri Boys Basketball State Rankings"))),
+        fluidRow(column(12, h1("Missouri Girls Basketball State Rankings",
+                               style = "color: #747474; font-weight: bold;
+                               text-align: center;"))),
         fluidRow(column(12, p("Get the rankings for any class, district, or season.
                               Note that some districts don't exist in some classes and
-                              some classes don't exist in some seasons."))),
+                              some classes don't exist in some seasons.",
+                              style = "text-align: center;"))),
         fluidRow(
           box(width = 4,
               selectInput(inputId = "class_rank_in",
@@ -28,6 +31,6 @@ tabItem(tabName = "rankings",
                 district. The rankings are based on the projected win percentages
                 for each of the teams if they played each of the other teams in the
                 table."),
-              # dataTableOutput(outputId = "state_rankings")
+              DTOutput(outputId = "state_rankings")
               ))
 )

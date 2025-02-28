@@ -1,11 +1,14 @@
 tabItem(tabName = "home",
-        fluidRow(column(12, h1("Your Home for MSHSAA Girl's Basketball Projections"))),
+        h1("Your Home for MSHSAA Girl's Basketball Projections",
+                               style = "color: #747474; font-weight: bold;
+           text-align: center;"),
         fluidRow(
           box(width = 12,
-              h2("Current Top 10"),
+              h2("Current Top 10", style = "text-align: center;"),
               p("All rankings are based off of current projected win percentages 
-                against other teams in the same class"),
-              # dataTableOutput(outputId = "home_top10")
+                against other teams in the same class", 
+                style = "text-align: center;"),
+              DTOutput(outputId = "home_top10")
               )
         ),
         fluidRow(box(
