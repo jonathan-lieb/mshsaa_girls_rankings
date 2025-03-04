@@ -36,6 +36,9 @@ tabItem(tabName = "sims",
                                       "Neutral" = "n"),
                           selected = "Home",
                           multiple = FALSE))),
+        fluidRow(box(
+          width = 12, 
+          DTOutput(outputId = "sim_points"))),
         fluidRow(
           box(width = 4, 
               p("Graph showing win probabilities for each team"),

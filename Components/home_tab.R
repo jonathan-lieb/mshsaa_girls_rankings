@@ -13,10 +13,10 @@ tabItem(tabName = "home",
         ),
         fluidRow(box(
           width = 12,
-              h2("Upcoming Games"),
-              h3("The 2024-25 season is under way!"),
+              h2("Upcoming Games", style = "text-align: center;"),
+              # h3("The 2024-25 season is under way!"),
               # h2(textOutput(outputId = "home_date_games")),
-              # dataTableOutput(outputId = "home_today")
+              dataTableOutput(outputId = "home_today")
         )
         )
 )

@@ -51,7 +51,7 @@ scrape_days <- function(date_vector, finished = F){
     classification=html_nodes(page, ".classification") %>% html_text()
     classes=as.numeric(gsub(".*?([0-9]+).*", "\\1", classification))
     districts=as.numeric(gsub('.*\\b(\\d+)\\b.*$', '\\1', classification))
-    schoolids= as.numeric(html_nodes(page, "tr") |> html_attr("data-school")) |> discard(is.na)
+    schoolids= as.numeric(html_nodes(page, "tr") |> html_attr("data-school")) |> purrr::discard(is.na)
     data=tibble(school=schools[c(T, F)], score=scores[c(T, F)], class_and_district=classification[c(T, F)],
                 class=classes[c(T, F)], district=districts[c(T, F)],
                 opp=schools[c(F, T)], opp_score=scores[c(F, T)], 

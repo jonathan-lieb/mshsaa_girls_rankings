@@ -27,6 +27,7 @@ team_history <- function(df, sea){
     group_by(season, school) |> 
     summarize(
       school = last(school),
+      season = last(season),
       ppg_ly = mean(score),
       papg_ly = mean(opp_score),
       OWE_ly = mean(weighted_points_off, na.rm = TRUE),
@@ -59,6 +60,6 @@ team_history <- function(df, sea){
         !is.na(oowp) ~ oowp,
         TRUE ~ NA)
     ) |> 
-    select(school, ends_with("ly"))
+    select(school, season, ends_with("ly"))
   past
 }

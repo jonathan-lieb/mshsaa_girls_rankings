@@ -27,6 +27,8 @@ score_mod <- read_rds("Models/lm_reg.rds")
 opp_score_mod <- read_rds("Models/lm_opp_reg.rds")
 class_mod <- read_rds("Models/class_glm_model.rds")
 drankings <- read_parquet("Data/drankings.parquet")
+upcoming <- read_parquet("Data/upcoming.parquet")
+old_modeling <- read_parquet("Data/modeling_data.parquet")
 school_choices <- unique(drankings$school)
 
 ui <- dashboardPage(
@@ -43,23 +45,50 @@ server <- function(input, output, session) {
     get_top10(drankings)
   })
   
+  output$home_today <- renderDataTable({
+    today <- upcoming |> filter(date == today())
+    t <- today$school
+    o <- today$opp
+    s <- first(today$season)
+    l <- today$h_a_n
+    create_today_table(sim_single_game(base, score_mod, opp_score_mod, class_mod, t, o, s, l))
+  })
+  
   # Rankings Server
   output$state_rankings <- renderDT({
     get_rankings(drankings, input$class_rank_in, input$year_rank_in, 
                  input$district_rank_in)})
   
+
   # Sim Server
-  output$sim_donut_plot <- renderPlot({
-    sim_game_donut(sim_single_game(base, score_mod, opp_score_mod, class_mod,
-                                   input$sim_team1_in, input$sim_team2_in,
-                                   max(base$season), input$sim_location_in))
+  sim_game <- reactive({
+    sim_single_game(base, score_mod, opp_score_mod, class_mod, 
+                    input$sim_team1_in, input$sim_team2_in, 
+                    max(base$season), input$sim_location_in)
   })
+  
+  output$sim_donut_plot <- renderPlot(sim_game_donut(sim_game()))
+  output$sim_points <- renderDT(sim_points_bars(sim_game()))
   
   output$sim_percentile_plot <- renderPlot({
     sim_game_percentiles(drankings |> filter(date == max(drankings$date)), 
                          input$sim_team1_in, input$sim_team2_in)
   })
   
+  # Team Server
+  output$team_dranking_sum <- renderDataTable({
+    team_dranking_summary(drankings, input$school_team_in, input$year_team_in)
+  })
+  
+  output$team_games <- renderDataTable({
+    team_prior_games(old_modeling, class_mod, score_mod, opp_score_mod, 
+                     input$school_team_in, input$year_team_in)
+  })
+  
+  output$team_future <- renderDataTable({
+    team_future_preds(upcoming |> filter(school == input$school_team_in), 
+                      base, class_mod, score_mod, opp_score_mod)
+  })
 }
 
 # Run the application 

@@ -14,6 +14,7 @@ sim_single_game <- function(base, score_mod, opp_score_mod, class_mod, t, o, s, 
            .pred_l = `.pred_l...4`,
            .pred_w = `.pred_w...5`) |> 
     select(school, opp, .pred_class, pred_score, pred_score_opp, .pred_w, .pred_l))
+  
   full_data <- suppressMessages(preds |> 
     left_join(game_data[[2]] |> 
                 select(school, district, wins, losses, ppg, papg, rpi, crpi, season),
