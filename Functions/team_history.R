@@ -60,6 +60,7 @@ team_history <- function(df, sea){
         !is.na(oowp) ~ oowp,
         TRUE ~ NA)
     ) |> 
-    select(school, season, ends_with("ly"))
+    select(school, season, ends_with("ly")) |> 
+    mutate(season = sea) 
   past
 }

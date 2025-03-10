@@ -1,12 +1,11 @@
-create_modeling_data_new <- function(base_data, new_data){
-  seasons <- unique(new_data$season)
-  new_data_days <- new_data |> 
-    pull(date) |> 
-    unique()
-  base_data <- base_data |> 
-    filter(!date %in% new_data_days)
-  combined_df <- bind_rows(base_data, new_data)
-  combined_df <- combined_df |> 
+create_modeling_data_new <- function(old_modeling_data, new_base_df, 
+                                     new_days){
+  old_modeling_data <- old_modeling_data |> 
+    filter(date < min(new_days))
+  min_year <- if(month(min(new_days)) > 9)(year(min(new_days))+1)else(year(min(new_days)))
+  max_year <- if(month(max(new_days)) > 9)(year(max(new_days))+1)else(year(max(new_days)))
+  seasons <- min_year:max_year
+  combined_df <- new_base_df |> 
     mutate(poss_est = pmax(score, opp_score) * .292960 + (score + opp_score) * .002931 + 31.601755,
            ppp = score / poss_est,
            ppp_opp = opp_score / poss_est)
@@ -34,16 +33,24 @@ create_modeling_data_new <- function(base_data, new_data){
         filter(date == d)
       
       day_full_matchups <- day_matchups |> 
-        left_join(day_team_results, by = c("school" = "school")) |> 
-        left_join(day_team_results, by = c("opp" = "school"), suffix = c("", "_opp")) |>
-        left_join(past, by = c("school" = "school")) |>
-        left_join(past, by = c("opp" = "school"), suffix = c("", "_opp")) #|> 
+        left_join(day_team_results, by = c("school" = "school", "season")) |> 
+        left_join(day_team_results, by = c("opp" = "school", "season"), suffix = c("", "_opp")) |>
+        left_join(past, by = c("school" = "school", "season")) |>
+        left_join(past, by = c("opp" = "school", "season"), suffix = c("", "_opp"))  #|> 
 
       day_full_matchups
     })
     day_results
   }, .progress = TRUE)
-  modeling_data
+  bind_rows(modeling_data, old_modeling_data) |> 
+    arrange(desc(date)) |> 
+    group_by(school, opp, season) |>
+    mutate(day_diff = abs(as.numeric(date - lag(date)))) |>
+    filter(day_diff > 3 | (abs(score -lag(score, default = -2)) + abs(opp_score - lag(opp_score, default = -2)) > 5)) |> 
+    ungroup() |> 
+    select(-day_diff) |>
+    distinct(school, opp, score, opp_score, wk = week(date), season, .keep_all = TRUE) |>
+    select(-wk)
 }
 
 

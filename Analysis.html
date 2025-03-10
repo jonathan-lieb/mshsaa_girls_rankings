@@ -38,10 +38,29 @@ ul.task-list li input[type="checkbox"] {
 
 </head>
 
-<body class="fullcontent">
+<body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#project-design" id="toc-project-design" class="nav-link active" data-scroll-target="#project-design">Project Design</a>
+  <ul class="collapse">
+  <li><a href="#project-overview" id="toc-project-overview" class="nav-link" data-scroll-target="#project-overview">Project Overview</a></li>
+  <li><a href="#data-description" id="toc-data-description" class="nav-link" data-scroll-target="#data-description">Data Description</a></li>
+  <li><a href="#steps-of-the-analysis" id="toc-steps-of-the-analysis" class="nav-link" data-scroll-target="#steps-of-the-analysis">Steps of the Analysis</a></li>
+  <li><a href="#primary-challenges-faced" id="toc-primary-challenges-faced" class="nav-link" data-scroll-target="#primary-challenges-faced">Primary Challenges Faced</a></li>
+  <li><a href="#modeling-goals" id="toc-modeling-goals" class="nav-link" data-scroll-target="#modeling-goals">Modeling Goals</a></li>
+  </ul></li>
+  <li><a href="#project-work-completed" id="toc-project-work-completed" class="nav-link" data-scroll-target="#project-work-completed">Project Work Completed</a>
+  <ul class="collapse">
+  <li><a href="#steps-of-the-analysis-1" id="toc-steps-of-the-analysis-1" class="nav-link" data-scroll-target="#steps-of-the-analysis-1">Steps of the Analysis</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
@@ -71,6 +90,21 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="project-design" class="level1">
 <h1>Project Design</h1>
+<section id="project-overview" class="level2">
+<h2 class="anchored" data-anchor-id="project-overview">Project Overview</h2>
+<p>High school athletics are a major part of the culture in the United States, however it is a field largely untouched by data and analytics. Not only is information regarding high school sports sometimes difficult to find, but it is often heavily disorganized and messy. One of the most difficult things to measure in high school sports is how good a team is relative to other teams. This is even difficult within a single sport in a single state. Each state has hundreds of teams, often spanning multiple classes, sometimes separated by leagues (private and public), and generally distanced by geography. Occasionally, states will have coaches rank the top ten teams, but this is almost entirely subjective, driven heavily by the opinions and bias of the coaches who vote, and fails to measure any other teams not in the top 10. Our questions going into this analysis and project revolve around addressing these issues by focusing on a couple of key questions:</p>
+<ol type="1">
+<li><p>Can historical data for a single high sport in a single state be accumulated into a single dataset that is easily accessible and usable?</p></li>
+<li><p>Can we predict an outcomes, both scores and win probabilities, of every single game played with a data driven model that is accurate enough to be useful?</p></li>
+<li><p>Can we rank every team in the state, rather than just the top 10 with analytics rather than opinion?</p></li>
+<li><p>Can we determine what factors are most important in determining the outcome of a high school game?</p></li>
+<li><p>Can this information be processed and presented in a way that is easily accessible and interpretable to the public, while being adaptable to new data?</p></li>
+</ol>
+</section>
+<section id="data-description" class="level2">
+<h2 class="anchored" data-anchor-id="data-description">Data Description</h2>
+<p>To address these questions, we will focus on the Missouri State High School Activities Association (MSHSAA) women’s basketball data. The data for this project will be scraped from the MSHSAA women’s basketball scoreboard, which has game scores going back approximately 15 years. This data will be aggregated into a single dataset that can then be cleaned, processed, transformed, and analyzed. The data will include information on the teams, scores, locations, dates, and classes of the teams involved. The plethora of easily accessible game data makes this a perfect candidate for analysis, and the field of women’s high school basketball in Missouri is almost entirely unexplored.</p>
+</section>
 <section id="steps-of-the-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="steps-of-the-analysis">Steps of the Analysis</h2>
 <ol type="1">
@@ -118,7 +152,26 @@ ul.task-list li input[type="checkbox"] {
 <section id="steps-of-the-analysis-1" class="level2">
 <h2 class="anchored" data-anchor-id="steps-of-the-analysis-1">Steps of the Analysis</h2>
 <ol type="1">
-<li><strong>Scrape the data</strong>: The data was successfully scraped from the MSHSAA girl’s scoreboard using the <code>initial_scrape.R</code> script, which uses the functions from <code>Functions/webscrape_new_games.R</code>. The original data consisted of 203,272 rows and 20 columns related to the teams and identifying traits about them, score, location, and date. The data is stored at <code>Data/initial_data.parquet</code>. This data consists of every game played from November 1, 2010 to January 27, 2025.</li>
+<li><strong>Scrape the data</strong>: The data was successfully scraped from the MSHSAA girl’s scoreboard using the <code>initial_scrape.R</code> script, which uses the functions from <code>Functions/webscrape_new_games.R</code>. The original data consisted of 203,272 rows and 20 columns related to the teams and identifying traits about them, score, location, and date. The data contains two rows for every game that was played. One from each teams perspective. The data is stored at <code>Data/initial_data.parquet</code>. This data consists of every game played from November 1, 2010 to January 27, 2025. The head of the data is shown below</li>
+</ol>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 20
+  school         score class_and_district   class district opp         opp_score
+  &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;                &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;
+1 Miami (Amoret)    11 Class 1 District 7&nbsp;      1        7 Archie             70
+2 Versailles        37 Class 3 District 10&nbsp;     3       10 Eugene             70
+3 South Holt        53 Class 1 District 14&nbsp;     1       14 Fairfax            43
+4 Van Buren         30 Class 2 District 2&nbsp;      2        2 Thayer             34
+5 Archie            70 Class 2 District 13&nbsp;     2       13 Miami (Amo…        11
+6 Eugene            70 Class 3 District 10&nbsp;     3       10 Versailles         37
+# ℹ 13 more variables: opp_class_and_district &lt;chr&gt;, opp_class &lt;dbl&gt;,
+#   opp_district &lt;dbl&gt;, result &lt;chr&gt;, tourney &lt;chr&gt;, location &lt;chr&gt;,
+#   date &lt;date&gt;, schoolid &lt;dbl&gt;, opp_schoolid &lt;dbl&gt;, game_id &lt;chr&gt;,
+#   season &lt;dbl&gt;, w_l &lt;fct&gt;, h_a_n &lt;fct&gt;</code></pre>
+</div>
+</div>
+<ol start="2" type="1">
 <li><strong>Clean the data</strong>: The data was cleaned in the <code>initial_scrape.R</code> script as well, calling functions from <code>Functions/clean_errors.R</code> and by association <code>Functions/add_home_away.R</code>, <code>Functions/clean_add_reverse_row.R</code>, and <code>Functions/scrape_team_page.R</code>. There were 8 major types of errors in the data. These were:<br>
 </li>
 </ol>
@@ -136,13 +189,326 @@ ul.task-list li input[type="checkbox"] {
 <li>Score for one of the teams is equal to their schoolid.<br>
 </li>
 <li>The School or opponent is “TBD”<br>
-Each of these required unique solutions to fix, which often involved scraping both team’s pages to see if the score was listed there. The data was then saved to <code>Data/cleaned.parquet</code>. This cleaned data consists of 196,868 rows and 20 columns.</li>
+Each of these required unique solutions to fix, which often involved scraping team pages to see if the score was listed there. The data was then saved to <code>Data/cleaned.parquet</code>. This cleaned data consists of 196,792 rows and 20 columns.</li>
 </ul>
 <ol start="3" type="1">
-<li><strong>Create a modeling dataset</strong>: The modeling dataset was created in the <code>initial_scrape.R</code> script as well, calling functions from <code>Functions/create_modeling_data.R</code>. This involved creating new features based on existing data, such as prior team scoring metrics, strength of schedule metrics, strength of record metrics, and historical versions of each of the metrics. Each metric only includes prior information about the team. The modeling dataset was saved to <code>Data/modeling_data.parquet</code>. The modeling dataset consists of 196,868 rows and 82 columns.</li>
-<li><strong>Perform EDA</strong>: The EDA was performed in the <code>EDA.R</code> script, which includes visualizations to understand the distribution of features, relationships between features, and any potential patterns in the data. The scores themselves for the girls games are normally distributed, with a mean of 45 and standard deviation of 15. The primary issue with the data is the large amount of missing values, which occur for the first game for all of the teams. Many of the variables are also relatively normally distributed until you impute values for missing data, which makes more leptokurtic distributions. Correlations between variables and the target variable were also examined, as well as correlations between pairs of variables.</li>
-<li><strong>Build a predictive model</strong>: Model code for a variety of different model structures has been stored in <code>Model_Code/</code>. The models include linear regression, boosted trees, neural networks, mixed effects models, penalized regression, and more. Modeling was done using the <code>tidymodels</code> package. Data was split into training and testing sets each time with a 60/40 split. The same seed was used for each model. Most used tuning with resamples and cross validation and then tuning with <code>tune_bayes()</code> to find the best hyperparameters.</li>
+<li><p><strong>Create a modeling dataset</strong>: The modeling dataset was created in the <code>initial_scrape.R</code> script as well, calling functions from <code>Functions/create_modeling_data.R</code>. This involved creating new features based on existing data, such as prior team scoring metrics, strength of schedule metrics, strength of record metrics, and historical versions of each of the metrics. Each metric only includes prior information about the team, meaning no future or current game data is leaked into the predictors. The modeling dataset was saved to <code>Data/modeling_data.parquet</code>. The modeling dataset consists of 196,792 rows and 70 columns. Please check out the <code>modeling_data_glossary.R</code> script for a full description of the features.</p></li>
+<li><p><strong>Perform EDA</strong>: The EDA was performed in the <code>EDA.R</code> script, which includes visualizations to understand the distribution of features, relationships between features, and any potential patterns in the data. The scores themselves for the girls games are normally distributed, with a mean of 45 and standard deviation of 15. A plot of the scores can be seen below.</p></li>
 </ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The primary issue with the data is the large amount of missing values in the modeling data, which occur for the first game for all of the teams. Many of the variables are also relatively normally distributed until you impute values for missing data, which makes more leptokurtic distributions. Correlations between variables and the target variable were also examined, as well as correlations between pairs of variables. It was found that a teams own statistical measures were more closely related to performance than the opponents statistical measures. The most highly correlated variables with the score of game for a team were all variables that measure a teams offensive scoring ability.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Correlation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Prior PTS Per Game</td>
+<td>0.576</td>
+</tr>
+<tr class="even">
+<td>Offensive Weighted Efficiency</td>
+<td>0.554</td>
+</tr>
+<tr class="odd">
+<td>Offensive Efficiency Rate</td>
+<td>0.552</td>
+</tr>
+</tbody>
+</table>
+<p>Offensive weighted efficiency attempts to measure offensive performance compared to the amount of points allowed per game that the opponent averages. Offensive efficiency rate attempts to measure the offensive performance of a team on an estimated possession basis. Obviously these were all highly correlated with each other as well. Since the data for each game is essentially duplicated, opponents prior points per game is the most highly correlated with the opponents score and so on. Please look at the <code>EDA.R</code> script for more details on the exploratory data analysis.</p>
+<ol start="5" type="1">
+<li><strong>Build a predictive model</strong>: It was decided very quickly to only use data from 2015 on for building a model. This was done because all prior season values for 2011 are NA. Additionally, approximately half of all games from 2012 are not reported. By 2013 it appeared most games were being properly recorded. In order to allow an extra buffer year after this and because we would still have 10 years worth of data for training and testing it was decided to use the 2014-2015 season as the earliest data for the model.</li>
+</ol>
+<p>Model code for a variety of different model structures has been stored in <code>Model_Code/</code>. Original models were fit for a variety of models and the original results can be seen in the plot below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Plots/reg_all_once_rmse.png" class="img-fluid figure-img" width="1200"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Plots/reg_all_once_mae.png" class="img-fluid figure-img" width="1200"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The models include linear regression models, boosted trees, neural networks, mixed effects models, penalized regression, and more. Modeling was done using the <code>tidymodels</code> package. Data was split into training and testing sets each time with a 60/40 split. The same seed was used for each model. Most used tuning with resamples and cross validation and then tuning with <code>tune_bayes()</code> to find the best hyperparameters.</p>
+<p>After careful consideration regarding the predictive power of different models compared to their interpretability, reusablity, and ease of use, it was decided to use a simple linear regression model for predicting score and opponent’s score and a logistic regression model for predicting the outcome (win or loss) of the game. The reasoning for this was rooted largely in practical reasons. The simple models were not getting significantly outperformed by more complex models, yet provided ease of use and interpretability. Coefficients for linear regression can be easily interpreted, as can the odds ratios for logistic regression. Additionally these models allowed for reciprocal predictions, meaning that the model would effective predict the same score for the first observation for the game as the second observation, allowing predictions to only have to be made on a single observation of the game. This is not true for most other models. Additionally it prevented models for classification and point estimation from being separate and producing different results.</p>
+<p>One main problem was still vexing the predictions though, early season games in which teams had played very few or no games. Rather than adding more confounding variables such as the teams points per game last year (which would also become relatively insignificant as the season went on) to the model, I decided to attempt to weight the associated predictors from the previous year, the current year, and league averages together in a single predictor. The idea is that these weighted predictors value previous years success and league averages more at the start of the season and then value current year performance more as the season goes on. This variable mixing tuning process was done with a grid of 99 different starting weight combinations rates of decay. The best weights for the score model and the classification model can be seen below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Best Weights for Score Model</caption>
+<colgroup>
+<col style="width: 15%">
+<col style="width: 12%">
+<col style="width: 4%">
+<col style="width: 11%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">past_success</th>
+<th style="text-align: right;">league_avg</th>
+<th style="text-align: right;">c</th>
+<th style="text-align: right;">rank_rmse</th>
+<th style="text-align: right;">rank_rsq</th>
+<th style="text-align: right;">rank_mae</th>
+<th style="text-align: right;">rank_mape</th>
+<th style="text-align: right;">rank_mean</th>
+<th style="text-align: right;">rank_max</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.9</td>
+<td style="text-align: right;">0.1</td>
+<td style="text-align: right;">0.7</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2.00</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">0.2</td>
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">3.00</td>
+<td style="text-align: right;">10</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.9</td>
+<td style="text-align: right;">0.1</td>
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">3.25</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0.7</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4.00</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">0.2</td>
+<td style="text-align: right;">0.7</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5.25</td>
+<td style="text-align: right;">12</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">6.25</td>
+<td style="text-align: right;">11</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Best Weights for Classification Model</caption>
+<colgroup>
+<col style="width: 14%">
+<col style="width: 12%">
+<col style="width: 4%">
+<col style="width: 12%">
+<col style="width: 15%">
+<col style="width: 19%">
+<col style="width: 11%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">past_success</th>
+<th style="text-align: right;">league_avg</th>
+<th style="text-align: right;">c</th>
+<th style="text-align: right;">rank_brier</th>
+<th style="text-align: right;">rank_accuracy</th>
+<th style="text-align: right;">rank_mn_log_loss</th>
+<th style="text-align: right;">rank_mean</th>
+<th style="text-align: right;">rank_max</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.7</td>
+<td style="text-align: right;">0.3</td>
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2.333333</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.6</td>
+<td style="text-align: right;">0.4</td>
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3.666667</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">0.2</td>
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">4.333333</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">5.333333</td>
+<td style="text-align: right;">10</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.8</td>
+<td style="text-align: right;">0.2</td>
+<td style="text-align: right;">0.7</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">7.000000</td>
+<td style="text-align: right;">9</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">0.9</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">7.333333</td>
+<td style="text-align: right;">9</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Based on this the best overall weights were decided and are as follows:<br>
+- Starting Previous Year Weight: 0.8<br>
+- Starting League Average Weight: 0.2<br>
+- Constant for Decay as Game Number Increases: 0.8</p>
+<p>The final models were then fit on the training data and used to make predictions on the testing data. The final models were saved to <code>Models/lm_reg.rds</code>, <code>Models/lm_opp_reg.rds</code>, and <code>Models/class_glm_mod.rds</code>.</p>
+<ol start="6" type="1">
+<li><strong>Evaluate the models</strong>: The models were evaluated using the <code>yardstick</code> package. The final regression model was evaluated using RMSE, MAE, and R-squared. The final classification model was evaluated using Brier score, log loss, and accuracy. The results of the evaluation can be seen below were saved to <code>Data/lm_reg_metrics.rds</code> and <code>Data/class_glm_metrics.rds</code> and can be seen below.</li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Final Regression Model Test Values</caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">RMSE</th>
+<th style="text-align: right;">R2</th>
+<th style="text-align: right;">MAE</th>
+<th style="text-align: right;">MAPE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">10.51046</td>
+<td style="text-align: right;">0.5253771</td>
+<td style="text-align: right;">8.263366</td>
+<td style="text-align: right;">23.36082</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Final Classification Model Test Values</caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">Brier</th>
+<th style="text-align: right;">Log_Loss</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.7960607</td>
+<td style="text-align: right;">0.1397764</td>
+<td style="text-align: right;">0.431017</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Obviously these results were just a little below the goals set for the project. For the linear regression model the RMSE was 10.5 just above the goal of 10, the MAE was 8.3, which is within a point of our goal of 7.5.</p>
+<p>The classification model was much more successful in relation to our preset goals. The Brier score was 0.14, just below the goal of 0.15, and the accuracy was 0.796, which with some rounding reaches the goal of 0.80.</p>
+<p>With some more careful scrutiny it can be seen the main culprit for our shortcomings resides in early season games, despite our best efforts to minimize the effects of those games. This can be seen effectively in the plots below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Plots/lm_avg_error_by_game.png" class="img-fluid figure-img" width="1500"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Plots/classification_accuracy_by_game.png" class="img-fluid figure-img" width="1500"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Obviously, it would’ve been ideal to reach all of our prediction goals, but nevertheless the models are still quite useful, particularly as the season preogresses.</p>
 </section>
 </section>
 

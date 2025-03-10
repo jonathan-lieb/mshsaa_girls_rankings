@@ -22,13 +22,13 @@ library("jsonlite")
 
 # Load functions
 miceadds::source.all("Functions/")
-base <- read_parquet("Data/cleaned.parquet")
+base <- read_parquet("Data/base.parquet")
 score_mod <- read_rds("Models/lm_reg.rds")
 opp_score_mod <- read_rds("Models/lm_opp_reg.rds")
 class_mod <- read_rds("Models/class_glm_model.rds")
 drankings <- read_parquet("Data/drankings.parquet")
 upcoming <- read_parquet("Data/upcoming.parquet")
-old_modeling <- read_parquet("Data/modeling_data.parquet")
+old_modeling <- read_parquet("Data/modeling.parquet")
 school_choices <- unique(drankings$school)
 
 ui <- dashboardPage(
@@ -47,6 +47,7 @@ server <- function(input, output, session) {
   
   output$home_today <- renderDataTable({
     today <- upcoming |> filter(date == today())
+    if(nrow(today) == 0)(today <- upcoming |> filter(date == min(date)))
     t <- today$school
     o <- today$opp
     s <- first(today$season)

@@ -52,7 +52,8 @@ make_drankings <- function(df, past_drankings = tibble()){
     mutate(date = max_date)
   
   if(nrow(past_drankings) > 0){
-    dranks <- bind_rows(dranks, past_drankings |> filter(date != max_date))
+    dranks <- bind_rows(dranks, past_drankings |> filter(date != max_date)) |> 
+      arrange(desc(date), class, rank)
   }
   
   dranks

@@ -32,13 +32,15 @@
 clean_errors <- function(base_df, new_data = NULL, recent = FALSE){
   
   if(recent){
-    oldest_new_day <- b |> 
+    oldest_new_day <- new_data |> 
       distinct(date) |>
       arrange(date) |>
       slice_head(n = 1) |> 
       pull(date)
     base_df_old <- base_df |> filter(date <= oldest_new_day - 7)
-    base_df <- base_df |> filter(date > oldest_new_day - 7)
+    base_df <- base_df |> filter(date > oldest_new_day - 7) |> 
+      bind_rows(new_data) |> 
+      arrange(desc(date))
   }
   
   correct_error7_8 <- function(df, tbd = FALSE) {
@@ -183,7 +185,7 @@ clean_errors <- function(base_df, new_data = NULL, recent = FALSE){
   }
   
   base_df <- base_df |> 
-    arrange(date, game_id) |> 
+    arrange(desc(date), game_id) |> 
     distinct(school, opp, score, opp_score, date, .keep_all = TRUE)
   
   print(count(count(base_df, game_id), n != 2))
@@ -262,6 +264,9 @@ clean_errors <- function(base_df, new_data = NULL, recent = FALSE){
   print(count(count(data3_fixed, game_id), n != 2))
   
   # Error 2
+  if(recent)(data3_fixed <- bind_rows(base_df_old, data3_fixed) |> 
+               ungroup() |>
+               arrange(desc(date)))
   data2_fixed <- data3_fixed |>
     group_by(school, opp, season) |>
     mutate(day_diff = abs(as.numeric(date - lag(date)))) |>
@@ -282,7 +287,7 @@ clean_errors <- function(base_df, new_data = NULL, recent = FALSE){
     filter(school != opp) |> 
     mutate(w_l = factor(ifelse(score > opp_score, "W", "L"), levels = c("L", "W")))
   
-  if(recent)(return(bind_rows(base_df_old, last_data) |> ungroup()))else(return(last_data))
+  return(last_data)
 }
 
 # Example usage

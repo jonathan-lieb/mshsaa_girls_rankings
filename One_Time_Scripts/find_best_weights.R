@@ -46,16 +46,12 @@ adj_weight_history <- function(df, la_weight, ps_weight, cs_weight,
                              "o_rate_ly", "d_rate_ly", "o_rate_ly_opp", "d_rate_ly_opp",
                              "avg_pace_opp")), ~replace(., is.na(.), 0))) |> 
       mutate(across(all_of(c("ppg_ly", "papg_ly", "papg_ly_opp", "ppg_ly_opp",
-                             "OWE_ly", "DWE_ly", "OWE_ly_opp", "DWE_ly_opp",
-                             "ppg_3y", "papg_3y", "papg_3y_opp", "ppg_3y_opp",
-                             "OWE_3y", "DWE_3y", "OWE_3y_opp", "DWE_3y_opp"
+                             "OWE_ly", "DWE_ly", "OWE_ly_opp", "DWE_ly_opp"
       )), 
       ~replace(., is.na(.), 45))) |>
-      mutate(across(all_of(c("rpi_ly", "rpi_ly_opp", "crpi_ly", "crpi_ly_opp", 
-                             "rpi_3y", "rpi_3y_opp", "crpi_3y", "crpi_3y_opp")), 
+      mutate(across(all_of(c("rpi_ly", "rpi_ly_opp", "crpi_ly", "crpi_ly_opp")), 
                     ~replace(., is.na(.), .5))) |>
-      mutate(across(all_of(c("avg_pace_ly", "avg_pace_ly_opp",
-                             "avg_pace_3y", "avg_pace_3y_opp")), 
+      mutate(across(all_of(c("avg_pace_ly", "avg_pace_ly_opp")), 
                     ~replace(., is.na(.), 48))) |>
       mutate(
         lawg = la_weight * constant^g,

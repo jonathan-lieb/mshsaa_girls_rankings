@@ -82,6 +82,14 @@ mape(lm_pred, truth = score, estimate = .pred)
 mape(lm_opp_pred, truth = opp_score, estimate = .pred)
 # 23.2
 
+tibble(
+  RMSE = rmse(lm_pred, truth = score, estimate = .pred)$.estimate,
+  R2 = rsq(lm_pred, truth = score, estimate = .pred)$.estimate,
+  MAE = mae(lm_pred, truth = score, estimate = .pred)$.estimate,
+  MAPE = mape(lm_pred, truth = score, estimate = .pred)$.estimate,
+) |> 
+  write_rds("Data/lm_reg_metrics.rds")
+
 lm_pred |> 
   group_by(g) |>
   summarize(

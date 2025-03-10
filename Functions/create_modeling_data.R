@@ -40,10 +40,10 @@ create_modeling_data <- function(df, new_data = T){
         filter(date == d)
       
       day_full_matchups <- day_matchups |> 
-        left_join(day_team_results, by = c("school" = "school")) |> 
-        left_join(day_team_results, by = c("opp" = "school"), suffix = c("", "_opp")) |>
-        left_join(past, by = c("school" = "school")) |>
-        left_join(past, by = c("opp" = "school"), suffix = c("", "_opp")) 
+        left_join(day_team_results, by = c("school" = "school", "season")) |> 
+        left_join(day_team_results, by = c("opp" = "school", "season"), suffix = c("", "_opp")) |>
+        left_join(past, by = c("school" = "school", "season")) |>
+        left_join(past, by = c("opp" = "school", "season"), suffix = c("", "_opp")) 
 
       day_full_matchups
     })
