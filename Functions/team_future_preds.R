@@ -2,7 +2,8 @@
 # 3/4/25
 
 # This function takes sims all future games for the team 
-team_future_preds <- function(future, base, class_mod, score_mod, opp_score_mod){
+team_future_preds <- function(future, base#, class_mod, score_mod, opp_score_mod
+                              ){
   if(nrow(future) == 0){
     return(datatable(tibble()))
   }
@@ -13,10 +14,11 @@ team_future_preds <- function(future, base, class_mod, score_mod, opp_score_mod)
   locs <- future$h_a_n
   full <- bind_rows(base, future)
   
-  sim_single_game(full, score_mod, opp_score_mod, class_mod, t, o, s, locs) |> 
-    select(school, opp, wins, losses, wins_opp, losses_opp, .pred_class, 
-           .pred_w, pred_score, pred_score_opp) |> 
-    mutate(.pred_class = ifelse(.pred_class == "w", "Win", "Loss")) |>
+  sim_single_game(full, #score_mod, opp_score_mod, class_mod,
+                  t, o, s, locs) |> 
+    select(school, opp, wins, losses, wins_opp, losses_opp, pred_class, 
+           pred_win, pred_score, pred_score_opp) |> 
+    mutate(pred_class = ifelse(pred_class == "win", "Win", "Loss")) |>
     datatable(class = paste0("cell-border compact"),
               container = htmltools::withTags(table(
                 class = 'display',

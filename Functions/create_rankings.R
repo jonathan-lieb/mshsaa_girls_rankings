@@ -7,15 +7,15 @@ create_rankings <- function(ranking_preds){
   school_sums <- ranking_preds |> 
     group_by(school) |>
     summarize(n = n(),
-              win_per = mean(.pred_class == "w"),
-              avg_proj_wper = mean(.pred_w),
+              win_per = mean(pred_class == "win"),
+              avg_proj_wper = mean(pred_win),
               avg_proj_score = mean(pred_score),
               avg_proj_opp_score = mean(pred_score_opp))
   opp_sums <- ranking_preds |>
     group_by(opp) |> 
     summarize(n = n(),
-              win_per = mean(.pred_class == "l"),
-              avg_proj_wper = mean(.pred_l),
+              win_per = mean(pred_class == "loss"),
+              avg_proj_wper = mean(pred_lose),
               avg_proj_score = mean(pred_score_opp),
               avg_proj_opp_score = mean(pred_score)
               )

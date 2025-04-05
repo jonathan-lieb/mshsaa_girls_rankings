@@ -4,14 +4,14 @@
 create_today_table <- function(pred_data){
   today <- pred_data |> 
     distinct(school, opp, .keep_all = T) |> 
-    mutate(.pred_w = .pred_w *100) |> 
-    mutate(across(c(ppg, papg, .pred_w, ppg_opp, papg_opp), ~round(., 2))) |>
+    mutate(pred_win = pred_win *100) |> 
+    mutate(across(c(ppg, papg, pred_win, ppg_opp, papg_opp), ~round(., 2))) |>
     mutate(across(c(crpi, crpi_opp), ~round(., 3))) |>
     select(School = school, Class = crpi, W = wins, L = losses, `PPG` = ppg,
            `PAPG` = papg,
            Opp = opp, `Opp. Class` = crpi_opp, `Opp. W` = wins_opp, `Opp. L` = losses_opp, `Opp. PPG` = ppg_opp,
            `Opp. PAPG` = papg_opp,
-           `Pred. Outcome` = .pred_class, `Pred. Win %` = .pred_w, `Pred Score` = pred_score, `Pred Opp Score` = pred_score_opp)
+           `Pred. Outcome` = pred_class, `Pred. Win %` = pred_win, `Pred Score` = pred_score, `Pred Opp Score` = pred_score_opp)
   
   today_descriptions <- c(School = "Name of School", CRPI = "Class Rating Percentage Index of School",
                           W = "Wins", L = "Losses", `PPG` = "Points Per Game",
@@ -53,8 +53,9 @@ create_today_table <- function(pred_data){
               )
             ),
   )|> 
+    formatRound(15:16, 2) |> 
     formatStyle(names(today),
                 valueColumns = "Pred. Outcome",
-                backgroundColor = styleEqual(c("w", "l"), c("lightgreen","coral")))
+                backgroundColor = styleEqual(c("win", "lose"), c("lightgreen","coral")))
 }
   

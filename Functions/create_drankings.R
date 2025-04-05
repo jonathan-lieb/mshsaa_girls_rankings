@@ -5,9 +5,9 @@
 make_drankings <- function(df, past_drankings = tibble()){
   max_date <- max(df$date) + 1
   
-  score_mod <- read_rds("Models/lm_reg.rds")
-  opp_score_mod <- read_rds("Models/lm_opp_reg.rds")
-  class_mod <- read_rds("Models/class_glm_model.rds")
+  # score_mod <- read_rds("Models/lm_reg.rds")
+  # opp_score_mod <- read_rds("Models/lm_opp_reg.rds")
+  # class_mod <- read_rds("Models/class_glm_model.rds")
   
   s <- max(df$season)
   
@@ -30,11 +30,8 @@ make_drankings <- function(df, past_drankings = tibble()){
     ranking_preds <- ranking_frames[[1]] |>
       weight_history() |>
       add_ternary() |>
-      augment(class_mod, new_data = _) |>
-      augment(score_mod, new_data = _) |>
-      augment(opp_score_mod, new_data = _) |>
-      rename(pred_score = `.pred...2`,
-             pred_score_opp = `.pred...1`)
+      predict_score() |>
+      predict_class()
     
     rankings <- ranking_preds |>
       create_rankings() |> 

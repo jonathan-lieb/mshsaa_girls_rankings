@@ -35,6 +35,35 @@ ul.task-list li input[type="checkbox"] {
 <link href="Analysis_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="Analysis_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -54,9 +83,13 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#primary-challenges-faced" id="toc-primary-challenges-faced" class="nav-link" data-scroll-target="#primary-challenges-faced">Primary Challenges Faced</a></li>
   <li><a href="#modeling-goals" id="toc-modeling-goals" class="nav-link" data-scroll-target="#modeling-goals">Modeling Goals</a></li>
   </ul></li>
-  <li><a href="#project-work-completed" id="toc-project-work-completed" class="nav-link" data-scroll-target="#project-work-completed">Project Work Completed</a>
+  <li><a href="#project-workflow" id="toc-project-workflow" class="nav-link" data-scroll-target="#project-workflow">Project Workflow</a>
   <ul class="collapse">
   <li><a href="#steps-of-the-analysis-1" id="toc-steps-of-the-analysis-1" class="nav-link" data-scroll-target="#steps-of-the-analysis-1">Steps of the Analysis</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#practical-recommendations" id="toc-practical-recommendations" class="nav-link" data-scroll-target="#practical-recommendations">Practical Recommendations</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  <li><a href="#changes-for-future-work" id="toc-changes-for-future-work" class="nav-link" data-scroll-target="#changes-for-future-work">Changes for Future Work</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -147,8 +180,8 @@ ul.task-list li input[type="checkbox"] {
 </section>
 </section>
 </section>
-<section id="project-work-completed" class="level1">
-<h1>Project Work Completed</h1>
+<section id="project-workflow" class="level1">
+<h1>Project Workflow</h1>
 <section id="steps-of-the-analysis-1" class="level2">
 <h2 class="anchored" data-anchor-id="steps-of-the-analysis-1">Steps of the Analysis</h2>
 <ol type="1">
@@ -249,7 +282,7 @@ Each of these required unique solutions to fix, which often involved scraping te
 </div>
 </div>
 <p>The models include linear regression models, boosted trees, neural networks, mixed effects models, penalized regression, and more. Modeling was done using the <code>tidymodels</code> package. Data was split into training and testing sets each time with a 60/40 split. The same seed was used for each model. Most used tuning with resamples and cross validation and then tuning with <code>tune_bayes()</code> to find the best hyperparameters.</p>
-<p>After careful consideration regarding the predictive power of different models compared to their interpretability, reusablity, and ease of use, it was decided to use a simple linear regression model for predicting score and opponent’s score and a logistic regression model for predicting the outcome (win or loss) of the game. The reasoning for this was rooted largely in practical reasons. The simple models were not getting significantly outperformed by more complex models, yet provided ease of use and interpretability. Coefficients for linear regression can be easily interpreted, as can the odds ratios for logistic regression. Additionally these models allowed for reciprocal predictions, meaning that the model would effective predict the same score for the first observation for the game as the second observation, allowing predictions to only have to be made on a single observation of the game. This is not true for most other models. Additionally it prevented models for classification and point estimation from being separate and producing different results.</p>
+<p>After careful consideration regarding the predictive power of different models compared to their interpretability, reusablity, and ease of use, it was decided to use a simple linear regression model for predicting score and opponent’s score and a logistic regression model for predicting the outcome (win or loss) of the game. The reasoning for this was rooted largely in practical reasons. The simple models were not getting significantly outperformed by more complex models, yet provided ease of use and interpretability. Coefficients for linear regression can be easily interpreted, as can the odds ratios for logistic regression. Additionally these models allowed for reciprocal, or symmetric predictions, meaning that the model would effective predict the same score for the first observation for the game as the second observation, allowing predictions to only have to be made on a single observation of the game. This is not true for most other models. Additionally it prevented models for classification and point estimation from being separate and producing different results. Lastly, because of shiny apps free tier limitations, reading in multiple complex models along with large datasets was causing too much memory to be used and the site to crash. By using simple models which I turned into functions after pulling out the coefficients, I was able to stay within the bounds for shiny apps free tier.</p>
 <p>One main problem was still vexing the predictions though, early season games in which teams had played very few or no games. Rather than adding more confounding variables such as the teams points per game last year (which would also become relatively insignificant as the season went on) to the model, I decided to attempt to weight the associated predictors from the previous year, the current year, and league averages together in a single predictor. The idea is that these weighted predictors value previous years success and league averages more at the start of the season and then value current year performance more as the season goes on. This variable mixing tuning process was done with a grid of 99 different starting weight combinations rates of decay. The best weights for the score model and the classification model can be seen below.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -439,7 +472,7 @@ Each of these required unique solutions to fix, which often involved scraping te
 </table>
 </div>
 </div>
-<p>Based on this the best overall weights were decided and are as follows:<br>
+<p>Based on this the best overall weights were decided to be as follows:<br>
 - Starting Previous Year Weight: 0.8<br>
 - Starting League Average Weight: 0.2<br>
 - Constant for Decay as Game Number Increases: 0.8</p>
@@ -508,7 +541,409 @@ Each of these required unique solutions to fix, which often involved scraping te
 </div>
 </div>
 </div>
-<p>Obviously, it would’ve been ideal to reach all of our prediction goals, but nevertheless the models are still quite useful, particularly as the season preogresses.</p>
+<p>Obviously, it would’ve been ideal to reach all of our prediction goals, but nevertheless the models are still quite useful, particularly as the season progresses.</p>
+<ol start="7" type="1">
+<li><strong>Interpretation of Coefficients and Variables</strong>: For the linear score model we saw the results below.</li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Regression Model Coefficients</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">-22.9322655</td>
+<td style="text-align: right;">2.3688839</td>
+<td style="text-align: right;">-9.680620</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">h_a_n</td>
+<td style="text-align: right;">0.9900368</td>
+<td style="text-align: right;">0.0436613</td>
+<td style="text-align: right;">22.675370</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">rpi</td>
+<td style="text-align: right;">10.2032053</td>
+<td style="text-align: right;">1.3121278</td>
+<td style="text-align: right;">7.776076</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">rpi_opp</td>
+<td style="text-align: right;">-6.9641430</td>
+<td style="text-align: right;">1.3121278</td>
+<td style="text-align: right;">-5.307519</td>
+<td style="text-align: right;">0.0000001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">crpi</td>
+<td style="text-align: right;">13.7433800</td>
+<td style="text-align: right;">0.3467683</td>
+<td style="text-align: right;">39.632743</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">crpi_opp</td>
+<td style="text-align: right;">-13.5420228</td>
+<td style="text-align: right;">0.3467683</td>
+<td style="text-align: right;">-39.052075</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ppg</td>
+<td style="text-align: right;">0.9053230</td>
+<td style="text-align: right;">0.0174468</td>
+<td style="text-align: right;">51.890439</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">papg_opp</td>
+<td style="text-align: right;">-0.2275360</td>
+<td style="text-align: right;">0.0142113</td>
+<td style="text-align: right;">-16.010935</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">o_rate</td>
+<td style="text-align: right;">-0.2050882</td>
+<td style="text-align: right;">0.0260241</td>
+<td style="text-align: right;">-7.880713</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">d_rate_opp</td>
+<td style="text-align: right;">-0.5769253</td>
+<td style="text-align: right;">0.0230855</td>
+<td style="text-align: right;">-24.990827</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DWE_opp</td>
+<td style="text-align: right;">-0.0600920</td>
+<td style="text-align: right;">0.0354056</td>
+<td style="text-align: right;">-1.697247</td>
+<td style="text-align: right;">0.0896534</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">avg_pace</td>
+<td style="text-align: right;">-0.9079990</td>
+<td style="text-align: right;">0.0572331</td>
+<td style="text-align: right;">-15.864940</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">avg_pace_opp</td>
+<td style="text-align: right;">1.3864090</td>
+<td style="text-align: right;">0.0572331</td>
+<td style="text-align: right;">24.223920</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">OWE_opp</td>
+<td style="text-align: right;">-0.1298628</td>
+<td style="text-align: right;">0.0422255</td>
+<td style="text-align: right;">-3.075461</td>
+<td style="text-align: right;">0.0021024</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">papg</td>
+<td style="text-align: right;">0.5190537</td>
+<td style="text-align: right;">0.0142113</td>
+<td style="text-align: right;">36.524043</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">OWE</td>
+<td style="text-align: right;">0.4185079</td>
+<td style="text-align: right;">0.0422255</td>
+<td style="text-align: right;">9.911263</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ppg_opp</td>
+<td style="text-align: right;">-0.3407417</td>
+<td style="text-align: right;">0.0174468</td>
+<td style="text-align: right;">-19.530306</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DWE</td>
+<td style="text-align: right;">-0.1192183</td>
+<td style="text-align: right;">0.0354056</td>
+<td style="text-align: right;">-3.367217</td>
+<td style="text-align: right;">0.0007596</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">d_rate</td>
+<td style="text-align: right;">0.2452566</td>
+<td style="text-align: right;">0.0230855</td>
+<td style="text-align: right;">10.623844</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">o_rate_opp</td>
+<td style="text-align: right;">0.1877156</td>
+<td style="text-align: right;">0.0260241</td>
+<td style="text-align: right;">7.213153</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>With the amount of data available it is not surprising to find significance for variables. All of the variables are significant except <code>DWE_opp</code>. This is not too surprising because of its strong correlation with <code>d_rate_opp</code> and <code>papg_opp</code>. However, it was left in the model for symmetry with the model predicting the opponent’s score (since <code>DWE</code> and <code>DWE_opp</code> are mirror images of each other). The opponent’s score model is largely the same as the score model, but with the coefficients flipped.</p>
+<p>The coefficients for the data are relatively easy to interpret. For example, for each increase of 1 prior point per game for the team, their score is expected to increase by .9 points, holding all other variables constant. Or if a team goes from away to home (a two unit increase) then they are expected to score 1.98 points more, holding all other variables constant.</p>
+<p>Notice though the inability to interpret the coefficient of the intercept which is -22.93. Obviously, a team cannot score a negative amount of points. However it is not possible for all predictors to be zero, so the the intercept is not interpretable in this context. Take for example the variable <code>rpi</code> which has the formula <span class="math display">\[RPI = \text{Team win} \% * 0.25 +
+\text{Opp. win} \% * 0.5 +
+\text{Opp. opp. win} \% * 0.25\]</span> It is not possible for an opponent and the opponent’s opponent to both have a winning percentage of 0 because one of them has to have won the game between them.</p>
+<p>There are some other coefficients that are confusing at first glance, such as the -.23 for Prior PTS Allowed Per Game by the opponent. It would be logical that as the opponent allows more points per game, the team would score more points, but that is the opposite of what the coefficient says. This negative coefficient is due to the multicolinearity between the scoring based predictors.</p>
+<p>For the classification model we saw the results below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Classification Model Coefficients and Odds Ratios</caption>
+<colgroup>
+<col style="width: 19%">
+<col style="width: 16%">
+<col style="width: 14%">
+<col style="width: 17%">
+<col style="width: 14%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+<th style="text-align: right;">odds_ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">-0.0005051</td>
+<td style="text-align: right;">0.6490006</td>
+<td style="text-align: right;">-0.0007783</td>
+<td style="text-align: right;">0.9993790</td>
+<td style="text-align: right;">0.9994950</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">h_a_n</td>
+<td style="text-align: right;">0.2446058</td>
+<td style="text-align: right;">0.0113859</td>
+<td style="text-align: right;">21.4831601</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">1.2771178</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ppg</td>
+<td style="text-align: right;">0.1303700</td>
+<td style="text-align: right;">0.0046707</td>
+<td style="text-align: right;">27.9122494</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">1.1392499</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">papg</td>
+<td style="text-align: right;">0.0794696</td>
+<td style="text-align: right;">0.0036955</td>
+<td style="text-align: right;">21.5041529</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">1.0827126</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">OWE</td>
+<td style="text-align: right;">0.0463138</td>
+<td style="text-align: right;">0.0120959</td>
+<td style="text-align: right;">3.8288728</td>
+<td style="text-align: right;">0.0001287</td>
+<td style="text-align: right;">1.0474030</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DWE</td>
+<td style="text-align: right;">0.0059175</td>
+<td style="text-align: right;">0.0101208</td>
+<td style="text-align: right;">0.5846845</td>
+<td style="text-align: right;">0.5587598</td>
+<td style="text-align: right;">1.0059350</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">rpi</td>
+<td style="text-align: right;">2.7417908</td>
+<td style="text-align: right;">0.3385382</td>
+<td style="text-align: right;">8.0989115</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">15.5147437</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">crpi</td>
+<td style="text-align: right;">3.3514973</td>
+<td style="text-align: right;">0.0902198</td>
+<td style="text-align: right;">37.1481431</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">28.5454425</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">o_rate</td>
+<td style="text-align: right;">-0.0271013</td>
+<td style="text-align: right;">0.0074842</td>
+<td style="text-align: right;">-3.6211542</td>
+<td style="text-align: right;">0.0002933</td>
+<td style="text-align: right;">0.9732626</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">d_rate</td>
+<td style="text-align: right;">0.1007637</td>
+<td style="text-align: right;">0.0064466</td>
+<td style="text-align: right;">15.6304937</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">1.1060153</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ppg_opp</td>
+<td style="text-align: right;">-0.1303736</td>
+<td style="text-align: right;">0.0046707</td>
+<td style="text-align: right;">-27.9130941</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.8777674</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">papg_opp</td>
+<td style="text-align: right;">-0.0794365</td>
+<td style="text-align: right;">0.0036955</td>
+<td style="text-align: right;">-21.4952769</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.9236366</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">OWE_opp</td>
+<td style="text-align: right;">-0.0463049</td>
+<td style="text-align: right;">0.0120959</td>
+<td style="text-align: right;">-3.8281433</td>
+<td style="text-align: right;">0.0001291</td>
+<td style="text-align: right;">0.9547508</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DWE_opp</td>
+<td style="text-align: right;">-0.0059270</td>
+<td style="text-align: right;">0.0101206</td>
+<td style="text-align: right;">-0.5856353</td>
+<td style="text-align: right;">0.5581207</td>
+<td style="text-align: right;">0.9940906</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">rpi_opp</td>
+<td style="text-align: right;">-2.7413040</td>
+<td style="text-align: right;">0.3385378</td>
+<td style="text-align: right;">-8.0974839</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0644862</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">crpi_opp</td>
+<td style="text-align: right;">-3.3519798</td>
+<td style="text-align: right;">0.0902203</td>
+<td style="text-align: right;">-37.1532957</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0350150</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">o_rate_opp</td>
+<td style="text-align: right;">0.0270887</td>
+<td style="text-align: right;">0.0074841</td>
+<td style="text-align: right;">3.6194827</td>
+<td style="text-align: right;">0.0002952</td>
+<td style="text-align: right;">1.0274590</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">d_rate_opp</td>
+<td style="text-align: right;">-0.1007383</td>
+<td style="text-align: right;">0.0064465</td>
+<td style="text-align: right;">-15.6268284</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.9041696</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">avg_pace</td>
+<td style="text-align: right;">-0.2555660</td>
+<td style="text-align: right;">0.0156980</td>
+<td style="text-align: right;">-16.2801995</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.7744780</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">avg_pace_opp</td>
+<td style="text-align: right;">0.2555479</td>
+<td style="text-align: right;">0.0156979</td>
+<td style="text-align: right;">16.2790646</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">1.2911688</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>All of variables are significant except <code>DWE</code> and <code>DWE_opp</code> (and the intercept). This is not too surprising since those variables mirror each other. However, they were left in the model for symmetry and for consistency with the score model.</p>
+<p>There are some very nice interpretations that can be made from the coefficients of the classification model. From the estimate we can acquire the odds ratio, which tells us how much more likely a team is to win given a one unit increase in the predictor while holding the other variables constant. For example, a teams odds of winning are 14% greater for each increase in one prior point per game for the team. Another easy interpretation is the effect of location. Since location is a ternary variable (away, neutral, home) we can see that a teams odds of winning are 63% greater when playing at home compared to playing away.</p>
+<p>Notice the the very large odds ratios for the variables <code>crpi</code> and <code>rpi</code>. This is due to the scale of those variables, which is between 0 and 1. For <code>crpi</code>, a measure of a teams true class level, a one unit increase in <code>crpi</code> would make a team with a <code>cpri = 1</code> 28.5 times more likely to win than a team with <code>crpi = 0</code>. This is extrapolation though. If we want a more realistic interpretation, we can do some quick math. A median <code>crpi</code> for a class 1 team is approximately .21 and the median <code>crpi</code> for a class 5 team is approximately .91. By using the estimated odds ratio of <span class="math inline">\(28.5^{.7}\)</span> we can see that a class 6 team would be 10.4 times more likely to win than a class 1 team, holding all other variables constant.</p>
+<ol start="8" type="1">
+<li><strong>Make predictions</strong>: Predictions with the selected models were capable of being made on any new data in the modeling data form. The ranking process for the teams is actually based on this. A grid is made with all the possible matchups for the teams in a class. Then each game is predicted. The percentage of games that they would be expected to win is calculated and that is used to rank the teams. Daily predictions are also made for each day’s games and displayed in the shiny app. The <code>sim_single_game()</code> function is used to make both the matchup data and the prediction for any game between any two teams.</li>
+</ol>
+<p>Additionally since the original data only included games played before January 28, 2025, the rest of the 2025 season data can be used as almost a secondary test set to evaluate the model. From Jamuary 28, 2025 to March 8, 2025 there were 2,709 games played and the classification model had an accuracy of 82.8%. The score model had a mean absolute error of 7.69 points for the 5,418 predictions made. This is encouraging and shows that the model is still performing well on new data.</p>
+<ol start="9" type="1">
+<li><p><strong>Create a Shiny app</strong>: A Shiny app was created to allow users to interact with the model and make predictions. The app is available at <a href="https://jtlieb.shinyapps.io/mshsaa_girls_rankings/">Lieb MSHSAA Girls Rankings</a>. It includes daily rankings for each class, predictions on the upcoming games, the ability to simulate a single game between two teams of your choosing, and page where you can see a breakdown of games for a single team.</p></li>
+<li><p><strong>Make the Process Automated</strong>: The scraping, cleaning, modeling data creation, and prediction processes were all automated. The <code>daily_work.R</code> file and the <code>deploy_app.R</code> file are both run each day by the task scheduler to update the data in each of the data sets for the app and then to redeploy the app with the updated data.</p></li>
+</ol>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<section id="goals-assessment" class="level4">
+<h4 class="anchored" data-anchor-id="goals-assessment">Goals Assessment</h4>
+<p>The goals for the project were largely met and the initial questions were answered sufficiently.</p>
+<ol type="1">
+<li><p>Yes the data for a single high school sport in a single state can and was accumulated into a single usable and accessible dataset. This is much easier said than done though as the data was extremely error laden and took a significant amount of time to parse through and determine what is accurate and what is not. Even after creating a relatively robust system it is still possible to have errors in the data or for certain real games to be lost. For example if team A played team B and won 63-50 and then team A played team B again two days later and won 63-51, that second game would be lost through the cleaning workflow due to the plethora of games that were entered with slightly different scores for the same game, but within a 3 day span, when in actuality the teams only played each other once (but entered different scores separately to MSHSAA).</p></li>
+<li><p>Yes, we can predict outcomes, both scores and win probabilities, of every single game played with a data driven model that is accurate enough to be useful. This is evidenced by accuracy rates of the model hovering around 80% and a mean absolute error of around 8 points per projection. These are not perfect, but provide a fantastic baseline for expectations.</p></li>
+<li><p>Yes, we can rank every team in the state, rather than just the top 10 with analytics rather than opinion. By predicting the outcome of every game, we can rank teams based on their expected win percentage against other teams in their class. This is a much more robust and data driven way to rank teams than simply relying on coaches polls or subjective opinions. There is now a way to tell who is the 25th ranked team or the worst team in a class, rather than just the top 10.</p></li>
+<li><p>Yes, we can determine what factors are most important in determining the outcome of a high school game. The coefficients from the models provide insight into what information the variables tell us about the outcome of a game.</p></li>
+<li><p>Yes, this information can be processed and presented in a way that is easily accessible and interpretable to the public, while being adaptable to new data. The Shiny app provides a user friendly interface for users to interact with the model and make predictions. The app is also adaptable to new data, as it is updated daily with new games and predictions.</p></li>
+</ol>
+</section>
+</section>
+<section id="practical-recommendations" class="level2">
+<h2 class="anchored" data-anchor-id="practical-recommendations">Practical Recommendations</h2>
+<ol type="1">
+<li>Take the model for what it is: An approximation of what is likely to happen based on past data. Many things outside of the model can affect the outcome of a game, such as injuries, sickness, transfer students, eligibility, size matchups, etc. The model is simple score and school data and does not account for these factors.</li>
+</ol>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<ol type="1">
+<li><p><strong>Dirty Data</strong>: The data is not perfect and there are still errors in the data. This is a limitation of the data itself and the scraping process. While we have done our best to clean the data, there may still be errors that affect the predictions.</p></li>
+<li><p><strong>Limited Data</strong>: The data is limited at the beginning of the season because all we have access to is data related to scores. If information were available on individual players, roster turnover, coaching changes, etc. this could be used to improve the early season predictions. Additionally, the data is limited to a single state and a single sport, which may not be generalizable to other states or sports.</p></li>
+<li><p><strong>Model Limitations</strong>: The models are simple linear models. This neglects any potential interactions. Logically, the home advantage a team has in the round of 16 in the state tournament is likely greater than the home advantage a team has in a regular season game in December, but the model would fail to capture this. There are several other examples that could be readily identified similarly.</p></li>
+<li><p><strong>Shiny App Limitations</strong>: The Shiny app is limited by the free tier of shinyapps.io. This means that there are limitations on the amount of data that can be loaded, the amount of memory that can be used, and the amount of time people can use the app. This limited my modeling heavily because I had to use simple models and functions rather than loading in large complex models.</p></li>
+</ol>
+</section>
+<section id="changes-for-future-work" class="level2">
+<h2 class="anchored" data-anchor-id="changes-for-future-work">Changes for Future Work</h2>
+<ol type="1">
+<li><p><strong>Reduce Multicollinearity</strong>: The models could be improved by reducing multicollinearity between predictors. This could be done by removing some of the highly correlated predictors or by using regularization techniques such as ridge regression or lasso regression. These were tampered with in the modeling process, but ultimately rejected because the simple models were performing well enough. The main issue with multicollinearity is the interpretation of coefficients, which is confounded by the presence of other variables. Principal component analysis could also be used to reduce the dimensionality of the data and remove multicollinearity.</p></li>
+<li><p><strong>Capture Interactions More</strong>: The models could be improved by capturing interactions between predictors. This could be done by adding interaction terms to the models or by using more complex models such as decision trees or random forests. These were also tampered with in the modeling process, but ultimately rejected because the simple models were performing well enough and due to memory constraints. Most interactions were not significant when fitting models, but logically some exist.</p></li>
+</ol>
 </section>
 </section>
 

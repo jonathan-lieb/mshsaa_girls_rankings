@@ -2,17 +2,16 @@
 # 3/4/25
 
 # This function predicts the scores for the old modeling data
-team_prior_games <- function(old_modeling, class_mod, score_mod, opp_score_mod, sc, sea){
+team_prior_games <- function(old_modeling, #class_mod, score_mod, opp_score_mod,
+                             sc, sea){
   old_modeling |> 
     filter(school == sc, season == sea) |> 
+    arrange(date) |> 
     weight_history() |> 
     add_ternary() |> 
-    augment(class_mod, new_data = _) |>
-    augment(score_mod, new_data = _) |>
-    augment(opp_score_mod, new_data = _) |>
-    rename(pred_score = `.pred...3`,
-           pred_score_opp = `.pred...1`) |> 
-    select(school, opp, score, opp_score, pred_score, pred_score_opp, .pred_w) |> 
+    predict_score() |>
+    predict_class() |>
+    select(school, opp, score, opp_score, pred_score, pred_score_opp, pred_win) |> 
     mutate(outcome = case_when(score > opp_score ~ "W",
                                score < opp_score ~ "L",
                                score == opp_score ~ "T")) |> 

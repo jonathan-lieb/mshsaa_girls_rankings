@@ -4,10 +4,10 @@
 # This function is used to get the rankings for a particular class or 
 # district. 
 
-get_rankings <- function(drankings, cl, season, districts){
+get_rankings <- function(drankings, cl, sea, districts){
   if(districts == "All")(districts <- 1:16)
   class_data <- drankings |> 
-    filter(class == cl, district %in% districts, season == season) |>
+    filter(class == cl, district %in% districts, season == sea) |>
     filter(date == max(date)) |>
     relocate(rank, .after = school) |>
     mutate(across(c(proj_wper, avg_proj_wper, ppg, papg), ~round(., 2))) |>

@@ -65,7 +65,7 @@ To address these questions, we will focus on the Missouri State High School Acti
 1. Brier score less than 0.15
 2. Accuracy greater than 0.80
 
-# Project Work Completed
+# Project Workflow
 ## Steps of the Analysis
 1. **Scrape the data**: The data was successfully scraped from the MSHSAA girl's scoreboard using the `initial_scrape.R` script, which uses the functions from `Functions/webscrape_new_games.R`. The original data consisted of 203,272 rows and 20 columns related to the teams and identifying traits about them, score, location, and date. The data contains two rows for every game that was played. One from each teams perspective. The data is stored at `Data/initial_data.parquet`. This data consists of every game played from November 1, 2010 to January 27, 2025. The head of the data is shown below
 ```{r}
@@ -120,7 +120,7 @@ include_graphics("Plots/reg_all_once_mae.png")
 
 The models include linear regression models, boosted trees, neural networks, mixed effects models, penalized regression, and more. Modeling was done using the `tidymodels` package. Data was split into training and testing sets each time with a 60/40 split. The same seed was used for each model. Most used tuning with resamples and cross validation and then tuning with `tune_bayes()` to find the best hyperparameters. 
 
-After careful consideration regarding the predictive power of different models compared to their interpretability, reusablity, and ease of use, it was decided to use a simple linear regression model for predicting score and opponent's score and a logistic regression model for predicting the outcome (win or loss) of the game. The reasoning for this was rooted largely in practical reasons. The simple models were not getting significantly outperformed by more complex models, yet provided ease of use and interpretability. Coefficients for linear regression can be easily interpreted, as can the odds ratios for logistic regression. Additionally these models allowed for reciprocal predictions, meaning that the model would effective predict the same score for the first observation for the game as the second observation, allowing predictions to only have to be made on a single observation of the game. This is not true for most other models. Additionally it prevented models for classification and point estimation from being separate and producing different results.
+After careful consideration regarding the predictive power of different models compared to their interpretability, reusablity, and ease of use, it was decided to use a simple linear regression model for predicting score and opponent's score and a logistic regression model for predicting the outcome (win or loss) of the game. The reasoning for this was rooted largely in practical reasons. The simple models were not getting significantly outperformed by more complex models, yet provided ease of use and interpretability. Coefficients for linear regression can be easily interpreted, as can the odds ratios for logistic regression. Additionally these models allowed for reciprocal, or symmetric predictions, meaning that the model would effective predict the same score for the first observation for the game as the second observation, allowing predictions to only have to be made on a single observation of the game. This is not true for most other models. Additionally it prevented models for classification and point estimation from being separate and producing different results. Lastly, because of shiny apps free tier limitations, reading in multiple complex models along with large datasets was causing too much memory to be used and the site to crash. By using simple models which I turned into functions after pulling out the coefficients, I was able to stay within the bounds for shiny apps free tier.
 
 One main problem was still vexing the predictions though, early season games in which teams had played very few or no games. Rather than adding more confounding variables such as the teams points per game last year (which would also become relatively insignificant as the season went on) to the model, I decided to attempt to weight the associated predictors from the previous year,  the current year, and league averages together in a single predictor. The idea is that these weighted predictors value previous years success and league averages more at the start of the season and then value current year performance more as the season goes on. This variable mixing tuning process was done with a grid of 99 different starting weight combinations rates of decay. The best weights for the score model and the classification model can be seen below. 
 
@@ -157,7 +157,7 @@ read_rds("Data/weights_results_class.rds") |>
   kable(caption = "Best Weights for Classification Model")
 ```
 
-Based on this the best overall weights were decided and are as follows:   
+Based on this the best overall weights were decided to be as follows:   
 - Starting Previous Year Weight: 0.8  
 - Starting League Average Weight: 0.2  
 - Constant for Decay as Game Number Increases: 0.8  
@@ -191,4 +191,81 @@ include_graphics("Plots/classification_accuracy_by_game.png")
 ```
 
 
-Obviously, it would've been ideal to reach all of our prediction goals, but nevertheless the models are still quite useful, particularly as the season preogresses.
+Obviously, it would've been ideal to reach all of our prediction goals, but nevertheless the models are still quite useful, particularly as the season progresses.
+
+7. **Interpretation of Coefficients and Variables**: For the linear score model we saw the results below. 
+
+```{r}
+read_rds("Data/lm_reg_coeffs.rds") |> 
+  kable(caption = "Regression Model Coefficients")
+```
+
+With the amount of data available it is not surprising to find significance for variables. All of the variables are significant except `DWE_opp`. This is not too surprising because of its strong correlation with `d_rate_opp` and `papg_opp`. However, it was left in the model for symmetry with the model predicting the opponent's score (since `DWE` and `DWE_opp` are mirror images of each other). The opponent's score model is largely the same as the score model, but with the coefficients flipped.
+
+The coefficients for the data are relatively easy to interpret. For example, for each increase of 1 prior point per game for the team, their score is expected to increase by .9 points, holding all other variables constant. Or if a team goes from away to home (a two unit increase) then they are expected to score 1.98 points more, holding all other variables constant. 
+
+Notice though the inability to interpret the coefficient of the intercept which is -22.93. Obviously, a team cannot score a negative amount of points. However it is not possible for all predictors to be zero, so the the intercept is not interpretable in this context. Take for example the variable `rpi` which has the formula $$RPI = \text{Team win} \% * 0.25 +
+\text{Opp. win} \% * 0.5 +
+\text{Opp. opp. win} \% * 0.25$$ It is not possible for an opponent and the opponent's opponent to both have a winning percentage of 0 because one of them has to have won the game between them. 
+
+There are some other coefficients that are confusing at first glance, such as the -.23 for Prior PTS Allowed Per Game by the opponent. It would be logical that as the opponent allows more points per game, the team would score more points, but that is the opposite of what the coefficient says. This negative coefficient is due to the multicolinearity between the scoring based predictors. 
+
+
+For the classification model we saw the results below.
+
+```{r}
+read_rds("Data/class_glm_odds_ratio.rds") |> 
+  kable(caption = "Classification Model Coefficients and Odds Ratios")
+```
+
+All of variables are significant except `DWE` and `DWE_opp` (and the intercept). This is not too surprising since those variables mirror each other. However, they were left in the model for symmetry and for consistency with the score model. 
+
+There are some very nice interpretations that can be made from the coefficients of the classification model. From the estimate we can acquire the odds ratio, which tells us how much more likely a team is to win given a one unit increase in the predictor while holding the other variables constant. For example, a teams odds of winning are 14% greater for each increase in one prior point per game for the team. Another easy interpretation is the effect of location. Since location is a ternary variable (away, neutral, home) we can see that a teams odds of winning are 63% greater when playing at home compared to playing away.
+
+Notice the the very large odds ratios for the variables `crpi` and `rpi`. This is due to the scale of those variables, which is between 0 and 1. For `crpi`, a measure of a teams true class level, a one unit increase in `crpi` would make a team with a `cpri = 1` 28.5 times more likely to win than a team with `crpi = 0`. This is extrapolation though. If we want a more realistic interpretation, we can do some quick math. A median `crpi` for a class 1 team is approximately .21 and the median `crpi` for a class 5 team is approximately .91. By using the estimated odds ratio of $28.5^{.7}$ we can see that a class 6 team would be 10.4 times more likely to win than a class 1 team, holding all other variables constant.
+
+8. **Make predictions**: Predictions with the selected models were capable of being made on any new data in the modeling data form. The ranking process for the teams is actually based on this. A grid is made with all the possible matchups for the teams in a class. Then each game is predicted. The percentage of games that they would be expected to win is calculated and that is used to rank the teams. Daily predictions are also made for each day's games and displayed in the shiny app. The `sim_single_game()` function is used to make both the matchup data and the prediction for any game between any two teams. 
+
+Additionally since the original data only included games played before January 28, 2025, the rest of the 2025 season data can be used as almost a secondary test set to evaluate the model. From Jamuary 28, 2025 to March 8, 2025 there were 2,709 games played and the classification model had an accuracy of 82.8%. The score model had a mean absolute error of 7.69 points for the 5,418 predictions made. This is encouraging and shows that the model is still performing well on new data.
+
+9. **Create a Shiny app**: A Shiny app was created to allow users to interact with the model and make predictions. The app is available at [Lieb MSHSAA Girls Rankings](https://jtlieb.shinyapps.io/mshsaa_girls_rankings/). It includes daily rankings for each class, predictions on the upcoming games, the ability to simulate a single game between two teams of your choosing, and page where you can see a breakdown of games for a single team. 
+
+10. **Make the Process Automated**: The scraping, cleaning, modeling data creation, and prediction processes were all automated. The `daily_work.R` file and the `deploy_app.R` file are both run each day by the task scheduler to update the data in each of the data sets for the app and then to redeploy the app with the updated data.
+
+## Conclusion
+
+#### Goals Assessment
+The goals for the project were largely met and the initial questions were answered sufficiently. 
+
+1. Yes the data for a single high school sport in a single state can and was accumulated into a single usable and accessible dataset. This is much easier said than done though as the data was extremely error laden and took a significant amount of time to parse through and determine what is accurate and what is not. Even after creating a relatively robust system it is still possible to have errors in the data or for certain real games to be lost. For example if team A played team B and won 63-50 and then team A played team B again two days later and won 63-51, that second game would be lost through the cleaning workflow due to the plethora of games that were entered with slightly different scores for the same game, but within a 3 day span, when in actuality the teams only played each other once (but entered different scores separately to MSHSAA).
+
+2. Yes, we can predict outcomes, both scores and win probabilities, of every single game played with a data driven model that is accurate enough to be useful. This is evidenced by accuracy rates of the model hovering around 80% and a mean absolute error of around 8 points per projection. These are not perfect, but provide a fantastic baseline for expectations. 
+
+3. Yes, we can rank every team in the state, rather than just the top 10 with analytics rather than opinion. By predicting the outcome of every game, we can rank teams based on their expected win percentage against other teams in their class. This is a much more robust and data driven way to rank teams than simply relying on coaches polls or subjective opinions. There is now a way to tell who is the 25th ranked team or the worst team in a class, rather than just the top 10.
+
+4. Yes, we can determine what factors are most important in determining the outcome of a high school game. The coefficients from the models provide insight into what information the variables tell us about the outcome of a game.
+
+5. Yes, this information can be processed and presented in a way that is easily accessible and interpretable to the public, while being adaptable to new data. The Shiny app provides a user friendly interface for users to interact with the model and make predictions. The app is also adaptable to new data, as it is updated daily with new games and predictions.
+
+## Practical Recommendations
+1. Take the model for what it is: An approximation of what is likely to happen based on past data. Many things outside of the model can affect the outcome of a game, such as injuries, sickness, transfer students, eligibility, size matchups, etc. The model is simple score and school data and does not account for these factors. 
+
+
+## Limitations
+1. **Dirty Data**: The data is not perfect and there are still errors in the data. This is a limitation of the data itself and the scraping process. While we have done our best to clean the data, there may still be errors that affect the predictions.
+
+2. **Limited Data**: The data is limited at the beginning of the season because all we have access to is data related to scores. If information were available on individual players, roster turnover, coaching changes, etc. this could be used to improve the early season predictions. Additionally, the data is limited to a single state and a single sport, which may not be generalizable to other states or sports.
+
+3. **Model Limitations**: The models are simple linear models. This neglects any potential interactions. Logically, the home advantage a team has in the round of 16 in the state tournament is likely greater than the home advantage a team has in a regular season game in December, but the model would fail to capture this. There are several other examples that could be readily identified similarly.
+
+4. **Shiny App Limitations**: The Shiny app is limited by the free tier of shinyapps.io. This means that there are limitations on the amount of data that can be loaded, the amount of memory that can be used, and the amount of time people can use the app. This limited my modeling heavily because I had to use simple models and functions rather than loading in large complex models.
+
+## Changes for Future Work
+1. **Reduce Multicollinearity**: The models could be improved by reducing multicollinearity between predictors. This could be done by removing some of the highly correlated predictors or by using regularization techniques such as ridge regression or lasso regression. These were tampered with in the modeling process, but ultimately rejected because the simple models were performing well enough. The main issue with multicollinearity is the interpretation of coefficients, which is confounded by the presence of other variables. Principal component analysis could also be used to reduce the dimensionality of the data and remove multicollinearity.
+
+2. **Capture Interactions More**: The models could be improved by capturing interactions between predictors. This could be done by adding interaction terms to the models or by using more complex models such as decision trees or random forests. These were also tampered with in the modeling process, but ultimately rejected because the simple models were performing well enough and due to memory constraints. Most interactions were not significant when fitting models, but logically some exist.
+
+
+
+
+

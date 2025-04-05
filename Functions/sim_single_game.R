@@ -1,19 +1,13 @@
 # Jonathan Lieb
 # 2/28/25
 
-sim_single_game <- function(base, score_mod, opp_score_mod, class_mod, t, o, s, loc = "n"){
+sim_single_game <- function(base, #score_mod, opp_score_mod, class_mod, 
+                            t, o, s, loc = "n"){
   game_data <- create_modeling_data_sims(base, t, o, s, loc)
   preds <- suppressMessages(game_data[[1]] |> 
-    augment(class_mod, new_data = _) |>
-    augment(class_mod, new_data = _, type = "prob") |>
-    augment(score_mod, new_data = _) |>
-    augment(opp_score_mod, new_data = _) |>
-    rename(pred_score = `.pred...2`,
-           pred_score_opp = `.pred...1`,
-           .pred_class = `.pred_class...3`,
-           .pred_l = `.pred_l...4`,
-           .pred_w = `.pred_w...5`) |> 
-    select(school, opp, .pred_class, pred_score, pred_score_opp, .pred_w, .pred_l))
+    predict_score() |> 
+    predict_class() |> 
+    select(school, opp, pred_class, pred_score, pred_score_opp, pred_win, pred_lose))
   
   full_data <- suppressMessages(preds |> 
     left_join(game_data[[2]] |> 

@@ -16,16 +16,15 @@ library("scales")
 library("reactable")
 library("ggrepel")
 library("glue")
-library("tidymodels")
+# library("tidymodels")
 library("jsonlite")
-
 
 # Load functions
 miceadds::source.all("Functions/")
 base <- read_parquet("Data/base.parquet")
-score_mod <- read_rds("Models/lm_reg.rds")
-opp_score_mod <- read_rds("Models/lm_opp_reg.rds")
-class_mod <- read_rds("Models/class_glm_model.rds")
+# score_mod <- read_rds("Models/lm_reg.rds")
+# opp_score_mod <- read_rds("Models/lm_opp_reg.rds")
+# class_mod <- read_rds("Models/class_glm_model.rds")
 drankings <- read_parquet("Data/drankings.parquet")
 upcoming <- read_parquet("Data/upcoming.parquet")
 old_modeling <- read_parquet("Data/modeling.parquet")
@@ -52,7 +51,8 @@ server <- function(input, output, session) {
     o <- today$opp
     s <- first(today$season)
     l <- today$h_a_n
-    create_today_table(sim_single_game(base, score_mod, opp_score_mod, class_mod, t, o, s, l))
+    create_today_table(sim_single_game(base, #score_mod, opp_score_mod, class_mod,
+                                       t, o, s, l))
   })
   
   # Rankings Server
@@ -63,7 +63,7 @@ server <- function(input, output, session) {
 
   # Sim Server
   sim_game <- reactive({
-    sim_single_game(base, score_mod, opp_score_mod, class_mod, 
+    sim_single_game(base, # score_mod, opp_score_mod, class_mod, 
                     input$sim_team1_in, input$sim_team2_in, 
                     max(base$season), input$sim_location_in)
   })
@@ -82,13 +82,14 @@ server <- function(input, output, session) {
   })
   
   output$team_games <- renderDataTable({
-    team_prior_games(old_modeling, class_mod, score_mod, opp_score_mod, 
+    team_prior_games(old_modeling,# class_mod, score_mod, opp_score_mod, 
                      input$school_team_in, input$year_team_in)
   })
   
   output$team_future <- renderDataTable({
     team_future_preds(upcoming |> filter(school == input$school_team_in), 
-                      base, class_mod, score_mod, opp_score_mod)
+                      base #class_mod, score_mod, opp_score_mod
+                      )
   })
 }
 
