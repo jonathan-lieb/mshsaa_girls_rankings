@@ -2,6 +2,8 @@
 title: "Analysis and Prediction of MSHSAA Girls Basketball Data"
 author: "Jonathan Lieb"
 format: html
+self-contained: true
+embed-resources: true
 toc: true
 ---
 
@@ -25,7 +27,7 @@ High school athletics are a major part of the culture in the United States, howe
 
 1. Can historical data for a single high sport in a single state be accumulated into a single dataset that is easily accessible and usable?
 
-2. Can we predict an outcomes, both scores and win probabilities, of every single game played with a data driven model that is accurate enough to be useful?
+2. Can we predict outcomes, both scores and win probabilities, for every single game played with a data driven model that is accurate enough to be useful?
 
 3. Can we rank every team in the state, rather than just the top 10 with analytics rather than opinion?
 
@@ -51,8 +53,8 @@ To address these questions, we will focus on the Missouri State High School Acti
 10. **Make the Process Automated**: Adjust the scraping, cleaning, modeling data creation, and prediction processes to be automated. This includes creating a function that can be run on a schedule to update the data and predictions automatically each night.
 
 ## Primary Challenges Faced
-1. **Data Cleaning**: The data scraped from the MSHSAA website was not in a clean format, and contained plentiful errors. This means that not only will I have to scrape the scoreboard page, but when certain conflicts arise scrape the relevant team pages and automate the decision process on which data to use.
-2. **Lack of Data to Start the Season**: The data at the start of the season is limited and makes prediction difficult. This means that I will have to find some way to estimate the effect of prior years data as well as current data and league average data to make predictions that are not completely random.
+1. **Data Cleaning**: The data scraped from the MSHSAA website was not in a clean format, and contained plentiful errors. This means that not only will I have to scrape the scoreboard page, but when certain conflicts arise, scrape the relevant team pages and automate the decision process on which data to use.
+2. **Lack of Data to Start the Season**: The data at the start of the season is limited and makes prediction difficult. This means that I will have to find some way to estimate the effect of prior years' data as well as current data and league average data to make predictions that are not completely random.
 3. **Correlation between Predictors**: A handful of the predictors in the modeling dataset are correlated with each other, which can lead to multicollinearity issues in the predictive model. This means that I will have to be careful in selecting the features to include in the model and may need to use techniques such as regularization to mitigate this issue.
 4. **Automation**: Automating the scraping, cleaning, modeling data creation, and prediction processes is a complex task that requires careful planning and testing, which sometimes fails based on internet connection and the MSHSAA website. This means that I will have to create a robust system that can handle errors and exceptions, and ensure that the data is updated regularly.
 
@@ -67,7 +69,7 @@ To address these questions, we will focus on the Missouri State High School Acti
 
 # Project Workflow
 ## Steps of the Analysis
-1. **Scrape the data**: The data was successfully scraped from the MSHSAA girl's scoreboard using the `initial_scrape.R` script, which uses the functions from `Functions/webscrape_new_games.R`. The original data consisted of 203,272 rows and 20 columns related to the teams and identifying traits about them, score, location, and date. The data contains two rows for every game that was played. One from each teams perspective. The data is stored at `Data/initial_data.parquet`. This data consists of every game played from November 1, 2010 to January 27, 2025. The head of the data is shown below
+1. **Scrape the data**: The data was successfully scraped from the MSHSAA girl's scoreboard using the `initial_scrape.R` script, which uses the functions from `Functions/webscrape_new_games.R`. The original data consisted of 203,272 rows and 20 columns related to the teams and identifying traits about them, score, location, and date. The data contains two rows for every game that was played, one from each teams perspective. The data is stored at `Data/initial_data.parquet`. This data consists of every game played from November 1, 2010 to January 27, 2025. The head of the data is shown below
 ```{r}
 initial_data <- read_parquet("Data/initial_data.parquet")
 head(initial_data)
@@ -83,7 +85,7 @@ head(initial_data)
  - The School or opponent is "TBD"  
 Each of these required unique solutions to fix, which often involved scraping team pages to see if the score was listed there. The data was then saved to `Data/cleaned.parquet`. This cleaned data consists of 196,792 rows and 20 columns.
 
-3. **Create a modeling dataset**: The modeling dataset was created in the `initial_scrape.R` script as well, calling functions from `Functions/create_modeling_data.R`. This involved creating new features based on existing data, such as prior team scoring metrics, strength of schedule metrics, strength of record metrics, and historical versions of each of the metrics. Each metric only includes prior information about the team, meaning no future or current game data is leaked into the predictors. The modeling dataset was saved to `Data/modeling_data.parquet`. The modeling dataset consists of 196,792 rows and 70 columns. Please check out the `modeling_data_glossary.R` script for a full description of the features.
+3. **Create a modeling dataset**: The modeling dataset was created in the `initial_scrape.R` script as well, calling functions from `Functions/create_modeling_data.R`. This involved creating new features based on existing data, such as prior team scoring metrics, strength of schedule metrics, strength of record metrics, and historical versions of each of the metrics. Each metric only includes prior information about the team, meaning no future or current game data is leaked into the predictors. The modeling dataset was saved to `Data/modeling_data.parquet`. The modeling dataset consists of 196,792 rows and 70 columns. Please check out the `modeling_data_glossary.txt` for a full description of the features.
 
 4. **Perform EDA**: The EDA was performed in the `EDA.R` script, which includes visualizations to understand the distribution of features, relationships between features, and any potential patterns in the data. The scores themselves for the girls games are normally distributed, with a mean of 45 and standard deviation of 15. A plot of the scores can be seen below. 
 
@@ -97,7 +99,7 @@ gf_density(~score, data = modeling_data, color = "red") |>
 ```
 
 
-The primary issue with the data is the large amount of missing values in the modeling data, which occur for the first game for all of the teams. Many of the variables are also relatively normally distributed until you impute values for missing data, which makes more leptokurtic distributions. Correlations between variables and the target variable were also examined, as well as correlations between pairs of variables. It was found that a teams own statistical measures were more closely related to performance than the opponents statistical measures. The most highly correlated variables with the score of game for a team were all variables that measure a teams offensive scoring ability. 
+The primary issue with the data is the large amount of missing values in the modeling data, which occur for the first game for all of the teams. Many of the variables are also relatively normally distributed until you impute values for missing data, which makes more leptokurtic distributions. Correlations between variables and the target variable were also examined, as well as correlations between pairs of variables. It was found that a team's own statistical measures were more closely related to performance than the opponent's statistical measures. The most highly correlated variables with the score of game for a team were all variables that measure a team's offensive scoring ability. 
 
 | Variable | Correlation |
 | --- | --- |
@@ -111,7 +113,7 @@ Offensive weighted efficiency attempts to measure offensive performance compared
 5. **Build a predictive model**: 
 It was decided very quickly to only use data from 2015 on for building a model. This was done because all prior season values for 2011 are NA. Additionally, approximately half of all games from 2012 are not reported. By 2013 it appeared most games were being properly recorded. In order to allow an extra buffer year after this and because we would still have 10 years worth of data for training and testing it was decided to use the 2014-2015 season as the earliest data for the model.
 
-Model code for a variety of different model structures has been stored in `Model_Code/`. Original models were fit for a variety of models and the original results can be seen in the plot below. 
+Model code for a variety of different model structures has been stored in the folder `Model_Code/`. Original models were fit for a variety of models and the original results can be seen in the plot below. 
 
 ```{r}
 include_graphics("Plots/reg_all_once_rmse.png")
@@ -120,9 +122,9 @@ include_graphics("Plots/reg_all_once_mae.png")
 
 The models include linear regression models, boosted trees, neural networks, mixed effects models, penalized regression, and more. Modeling was done using the `tidymodels` package. Data was split into training and testing sets each time with a 60/40 split. The same seed was used for each model. Most used tuning with resamples and cross validation and then tuning with `tune_bayes()` to find the best hyperparameters. 
 
-After careful consideration regarding the predictive power of different models compared to their interpretability, reusablity, and ease of use, it was decided to use a simple linear regression model for predicting score and opponent's score and a logistic regression model for predicting the outcome (win or loss) of the game. The reasoning for this was rooted largely in practical reasons. The simple models were not getting significantly outperformed by more complex models, yet provided ease of use and interpretability. Coefficients for linear regression can be easily interpreted, as can the odds ratios for logistic regression. Additionally these models allowed for reciprocal, or symmetric predictions, meaning that the model would effective predict the same score for the first observation for the game as the second observation, allowing predictions to only have to be made on a single observation of the game. This is not true for most other models. Additionally it prevented models for classification and point estimation from being separate and producing different results. Lastly, because of shiny apps free tier limitations, reading in multiple complex models along with large datasets was causing too much memory to be used and the site to crash. By using simple models which I turned into functions after pulling out the coefficients, I was able to stay within the bounds for shiny apps free tier.
+After careful consideration regarding the predictive power of different models compared to their interpretability, reusablity, and ease of use, it was decided to use a simple linear regression model for predicting score and opponent's score and a logistic regression model for predicting the outcome (win or loss) of the game. The reasoning for this was rooted largely in practical reasons. The simple models were not getting significantly outperformed by more complex models, yet provided ease of use and interpretability. Coefficients for linear regression can be easily interpreted, as can the odds ratios for logistic regression. Additionally these models allowed for reciprocal, or symmetric predictions, meaning that the model would effectively predict the same score for the first observation for the game as the second observation, allowing predictions to only have to be made on a single observation of the game. This is not true for most other models. Additionally it prevented models for classification and point estimation from being separate and producing different results. Lastly, because of shiny apps free tier limitations, reading in multiple complex models along with large datasets was causing too much memory to be used and the site to crash. By using simple models which I turned into functions after pulling out the coefficients, I was able to stay within the bounds for shiny apps free tier.
 
-One main problem was still vexing the predictions though, early season games in which teams had played very few or no games. Rather than adding more confounding variables such as the teams points per game last year (which would also become relatively insignificant as the season went on) to the model, I decided to attempt to weight the associated predictors from the previous year,  the current year, and league averages together in a single predictor. The idea is that these weighted predictors value previous years success and league averages more at the start of the season and then value current year performance more as the season goes on. This variable mixing tuning process was done with a grid of 99 different starting weight combinations rates of decay. The best weights for the score model and the classification model can be seen below. 
+One main problem was still vexing the predictions though- early season games in which teams had played very few or no games. Rather than adding more confounding variables such as the teams points per game last year (which would also become relatively insignificant as the season went on) to the model, I decided to attempt to weight the associated predictors from the previous year,  the current year, and league averages together in a single predictor. The idea is that these weighted predictors value the previous year's success and league averages more at the start of the season and then value current year performance more as the season goes on. This variable mixing tuning process was done with a grid of 99 different starting weight combinations rates of decay. The best weights for the score model and the classification model can be seen below where `past_success` is the starting weight for the previous year's data, `league_avg` is the starting weight for the league average data, and `c` is the constant for decay $C^{games}$ as game number increases for `past_success` and `league_avg`. Current data receives all weight not allocated to `past_success` and `league_avg`.
 
 ```{r}
 read_rds("Data/weights_results.rds") |> 
@@ -178,9 +180,9 @@ read_rds("Data/class_glm_metrics.rds") |>
   kable(caption = "Final Classification Model Test Values")
 ```
 
-Obviously these results were just a little below the goals set for the project. For the linear regression model the RMSE was 10.5 just above the goal of 10, the MAE was 8.3, which is within a point of our goal of 7.5. 
+Obviously these results were just a little below the goals set for the project. For the linear regression model the RMSE of 10.5 was just above the goal of 10 and the MAE was 8.3, which was within a point of our goal of 7.5. 
 
-The classification model was much more successful in relation to our preset goals. The Brier score was 0.14, just below the goal of 0.15, and the accuracy was 0.796, which with some rounding reaches the goal of 0.80.
+The classification model was much more successful in relation to our preset goals. The Brier score was 0.14, just barely better than the goal of 0.15, and the accuracy was 0.796, which with some rounding reaches the goal of 0.80.
 
 With some more careful scrutiny it can be seen the main culprit for our shortcomings resides in early season games, despite our best efforts to minimize the effects of those games. This can be seen effectively in the plots below.
 
@@ -226,7 +228,23 @@ Notice the the very large odds ratios for the variables `crpi` and `rpi`. This i
 
 8. **Make predictions**: Predictions with the selected models were capable of being made on any new data in the modeling data form. The ranking process for the teams is actually based on this. A grid is made with all the possible matchups for the teams in a class. Then each game is predicted. The percentage of games that they would be expected to win is calculated and that is used to rank the teams. Daily predictions are also made for each day's games and displayed in the shiny app. The `sim_single_game()` function is used to make both the matchup data and the prediction for any game between any two teams. 
 
-Additionally since the original data only included games played before January 28, 2025, the rest of the 2025 season data can be used as almost a secondary test set to evaluate the model. From Jamuary 28, 2025 to March 8, 2025 there were 2,709 games played and the classification model had an accuracy of 82.8%. The score model had a mean absolute error of 7.69 points for the 5,418 predictions made. This is encouraging and shows that the model is still performing well on new data.
+Additionally since the original data only included games played before January 28, 2025, the rest of the 2025 season data can be used as almost a secondary test set to evaluate the model. From Jamuary 28, 2025 to March 8, 2025 there were 2,709 games played and the classification model had an accuracy of 82.8%. The score model had a mean absolute error of 7.69 points for the 5,418 predictions made. This is encouraging and shows that the model is still performing well on new data. 
+
+The model was also highly predictive even far in advance and performed better than coaches' state rankings. The table below shows a comparison of where each eventual state champion was ranked by both the MBCA (Missouri Basketball Coaches Association) poll and the model on January 28, 2025. It can be seen that the model accurately ranked 4 of the 6 eventual state champions as the top team in their class, with the other two being ranked 3rd and 5th. The MBCA rankings (if we allow ties of top ranked teams to count) correctly ranked 3 of the 6 eventual state champions as the top team in their class, with the other three being ranked 2nd, 5th, and 6th. The MBCA poll only performed better than the model in 1 of the 6 classes.
+
+```{r}
+tribble(
+  ~"Class", ~"State Champion", ~"MBCA Rank", ~"Model Rank",
+  1, "Chadwick", "6", 5, 
+  2, "Skyline", "T-1", 3, 
+  3, "Fair Grove", "2", 1,
+  4, "Doniphan", "5", 1, 
+  5, "Lift for Life Academy", "1", 1,
+  6, "Incarnate Word", "1", 1
+) |> 
+  kable(caption = "Comparison of State Champions and Rankings on January 28, 2025")
+```
+
 
 9. **Create a Shiny app**: A Shiny app was created to allow users to interact with the model and make predictions. The app is available at [Lieb MSHSAA Girls Rankings](https://jtlieb.shinyapps.io/mshsaa_girls_rankings/). It includes daily rankings for each class, predictions on the upcoming games, the ability to simulate a single game between two teams of your choosing, and page where you can see a breakdown of games for a single team. 
 
@@ -237,7 +255,7 @@ Additionally since the original data only included games played before January 2
 #### Goals Assessment
 The goals for the project were largely met and the initial questions were answered sufficiently. 
 
-1. Yes the data for a single high school sport in a single state can and was accumulated into a single usable and accessible dataset. This is much easier said than done though as the data was extremely error laden and took a significant amount of time to parse through and determine what is accurate and what is not. Even after creating a relatively robust system it is still possible to have errors in the data or for certain real games to be lost. For example if team A played team B and won 63-50 and then team A played team B again two days later and won 63-51, that second game would be lost through the cleaning workflow due to the plethora of games that were entered with slightly different scores for the same game, but within a 3 day span, when in actuality the teams only played each other once (but entered different scores separately to MSHSAA).
+1. Yes the data for a single high school sport in a single state can and was accumulated into a single usable and accessible dataset. This is much easier said than done though as the data was extremely error laden and took a significant amount of time to parse through and determine what was accurate and what was not. Even after creating a relatively robust system it is still possible to have errors in the data or for certain real games to be lost. For example if team A played team B and won 63-50 and then team A played team B again two days later and won 63-51, that second game would be lost through the cleaning workflow due to the plethora of games that were entered with slightly different scores for the same game, but within a 3 day span, when in actuality the teams only played each other once (but entered different scores separately to MSHSAA).
 
 2. Yes, we can predict outcomes, both scores and win probabilities, of every single game played with a data driven model that is accurate enough to be useful. This is evidenced by accuracy rates of the model hovering around 80% and a mean absolute error of around 8 points per projection. These are not perfect, but provide a fantastic baseline for expectations. 
 

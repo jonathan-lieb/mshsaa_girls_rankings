@@ -9,3 +9,4 @@ appfiles <- c("app.R", "Components", "Functions", "www",
               # "Models/lm_reg.rds"
               )
 rsconnect::deployApp(appFiles = appfiles, launch.browser = FALSE)
+

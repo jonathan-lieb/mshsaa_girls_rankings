@@ -1,0 +1,72 @@
+The variables in the modeling data set are as follows: 
+  
+score: The score for the school 
+opp_score: The score for the opponent
+school: The school name 
+class: The class of the school 
+opp: The opposing school's name 
+opp_class: The opposing school's class 
+h_a_n: A factor variable with "a", "n", "h" representing the location of the game as away, neutral site, or home
+date: The date of the game in "YYYY-MM-DD" format
+season: The season of the game in "YYYY" format, each season is represented by the year the season ends in
+game_id: A unique identifier for each game
+district: The district of the school
+g: The number of prior games played in the season by the school
+OWE: Offensive Weighted Efficiency - A weighted measure of offensive performance that uses points scored by the team compared to average points allowed by the opponent
+DWE: Defensive Weighted Efficiency - A weighted measure of defensive performance that uses points allowed by the team compared to average points scored by the opponent
+o_rate: Offensive Rate - A measure of the team's offensive efficiency using points per estimated possesstion above what the opponent would generally allow per possession and multiplied by 100 possession. An average offensive team will have an o_rate of 0
+d_rate: Defensive Rate - A measure of the team's defensive efficiency using points per estimated possession above what the opponent would generally score per possession and multiplied by 100 possessions. An average defensive team will have a d_rate of 0
+ppg: Points per game for the school
+papg: Points allowed per game for the school
+eff_margin: Efficiency Margin - The difference between the OWE and DWE, a measure of overall team efficiency
+pts_margin: Points Margin - The difference between ppg and papg, a measure of overall scoring margin
+wins: The number of wins for the school in the season
+losses: The number of losses for the school in the season
+wp: Win Percentage - The percentage of games won by the school in the season
+owp: Opponent Win Percentage - The average win percentage of the school's opponents in the season
+oowp: Opponent Opponent Win Percentage - The average win percentage of the opponents' opponents in the season
+rpi: Ratings Percentage Index - A measure of the team's strength of schedule and performance, calculated using .25 * wp + .5 * owp + .25 * oowp
+avg_pace: Average Pace - The average number of estimated possessions per game for the school
+ocv: Opponents class value - A measure of the average class value of the school's opponents
+cv: Class Value - A measure of the school's class value based on the classification of the school
+oocv: Opponent Opponents Class Value - A measure of the average class value of the opponents' opponents
+crpi: Class Ratings Percentage Index - A measure of the team's strength of schedule based on class, calculated as .25 * cv + .5 * ocv + .25 * oocv
+district_opp: The district of the opposing school
+g_opp: The number of prior games played in the season by the opposing school
+OWE_opp: Offensive Weighted Efficiency for the opposing school
+DWE_opp: Defensive Weighted Efficiency for the opposing school
+o_rate_opp: Offensive Rate for the opposing school
+d_rate_opp: Defensive Rate for the opposing school
+ppg_opp: Points per game for the opposing school
+papg_opp: Points allowed per game for the opposing school
+eff_margin_opp: Efficiency Margin for the opposing school
+pts_margin_opp: Points Margin for the opposing school
+wins_opp: The number of wins for the opposing school in the season
+losses_opp: The number of losses for the opposing school in the season
+wp_opp: Win Percentage for the opposing school in the season
+owp_opp: Opponent Win Percentage for the opposing school in the season
+oowp_opp: Opponent Opponent Win Percentage for the opposing school in the season
+rpi_opp: Ratings Percentage Index for the opposing school
+avg_pace_opp: Average Pace for the opposing school
+ocv_opp: Opponents class value for the opposing school
+cv_opp: Class Value for the opposing school
+oocv_opp: Opponent Opponents Class Value for the opposing school
+crpi_opp: Class Ratings Percentage Index for the opposing school
+ppg_ly: Points per game for the school in the last season
+papg_ly: Points allowed per game for the school in the last season
+OWE_ly: Offensive Weighted Efficiency for the school in the last season
+DWE_ly: Defensive Weighted Efficiency for the school in the last season
+o_rate_ly: Offensive Rate for the school in the last season
+d_rate_ly: Defensive Rate for the school in the last season
+avg_pace_ly: Average Pace for the school in the last season
+crpi_ly: Class Ratings Percentage Index for the school in the last season
+rpi_ly: Ratings Percentage Index for the school in the last season
+ppg_ly_opp: Points per game for the opposing school in the last season
+papg_ly_opp: Points allowed per game for the opposing school in the last season
+OWE_ly_opp: Offensive Weighted Efficiency for the opposing school in the last season
+DWE_ly_opp: Defensive Weighted Efficiency for the opposing school in the last season
+o_rate_ly_opp: Offensive Rate for the opposing school in the last season
+d_rate_ly_opp: Defensive Rate for the opposing school in the last season
+avg_pace_ly_opp: Average Pace for the opposing school in the last season
+crpi_ly_opp: Class Ratings Percentage Index for the opposing school in the last season
+rpi_ly_opp: Ratings Percentage Index for the opposing school in the last season
